@@ -3,7 +3,8 @@ import {
   getCircuits, getCircuitBySlug,
   getDestinations, getDestinationBySlug,
   getDistricts, getDistrictBySlug,
-  getEvents, getEventBySlug
+  getEvents, getEventBySlug,
+  getCuisineItems, getCuisineItemBySlug
 } from '../controllers/tourismController.js';
 import { getPublicVendors } from '../controllers/vendorController.js';
 
@@ -20,6 +21,9 @@ router.get('/districts/:slug', getDistrictBySlug);
 
 router.get('/events', getEvents);
 router.get('/events/:slug', getEventBySlug);
+
+router.get('/cuisine', getCuisineItems);
+router.get('/cuisine/:slug', getCuisineItemBySlug);
 
 router.get('/vendors', getPublicVendors);
 

@@ -9,6 +9,8 @@ import { Destination } from '../../types';
 import { TabView, TabItem } from '../../components/common/TabView';
 import { Lightbox } from '../../components/common/Lightbox';
 import { SpotInteractiveMap } from '../../components/tourism/SpotInteractiveMap';
+import { FavoriteButton } from '../../components/common/FavoriteButton';
+import { PhotoMosaic } from '../../components/common/PhotoMosaic';
 
 export const DestinationDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -55,10 +57,9 @@ export const DestinationDetailPage: React.FC = () => {
     );
   }
 
-  const galleryImages = [
-    destination.heroImage,
-    ...(destination.gallery || [])
-  ];
+  const galleryImages = (destination.gallery && destination.gallery.length > 0)
+    ? destination.gallery
+    : [];
 
   const travelInfo = destination.travelInformation || {};
   const isVerified = travelInfo.contentStatus === 'VERIFIED';
@@ -80,51 +81,63 @@ export const DestinationDetailPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Did You Know Callout Box */}
-          {travelInfo.didYouKnow && (
-            <div className="bg-amber-900 text-cream p-6 md:p-8 rounded-xl border-2 border-brand-gold shadow-lg space-y-3">
-              <div className="flex items-center space-x-3 text-brand-gold font-bold text-xs sub-nav-label tracking-widest">
-                <Sparkles className="w-5 h-5 text-brand-gold animate-pulse" />
-                <span>DID YOU KNOW? / रोचक तथ्य</span>
-              </div>
-              <p className="font-serif text-lg md:text-xl leading-relaxed text-white">
-                "{travelInfo.didYouKnow}"
-              </p>
+          {/* Callout Box */}
+          <div className="bg-amber-900 text-cream p-6 md:p-8 rounded-xl border-2 border-brand-gold shadow-lg space-y-3">
+            <div className="flex items-center space-x-3 text-brand-gold font-bold text-xs sub-nav-label tracking-widest">
+              <Sparkles className="w-5 h-5 text-brand-gold animate-pulse" />
+              <span>DID YOU KNOW? / क्या आप जानते हैं?</span>
             </div>
-          )}
+            <p className="font-serif text-lg md:text-xl leading-relaxed text-white">
+              "{travelInfo.didYouKnow || 'This ancient heritage site has served as a cultural and spiritual beacon for over two millennia.'}"
+            </p>
+          </div>
 
-          {/* Key Facts & Fun Highlights */}
-          {travelInfo.funFacts && travelInfo.funFacts.length > 0 && (
-            <div className="bg-cream p-6 rounded-xl border border-brand-brown/15 space-y-4">
-              <h4 className="sub-nav-label text-brand-maroon text-xs tracking-wider">HERITAGE HIGHLIGHTS & TRIVIA</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-sans text-xs">
-                {travelInfo.funFacts.map((fact, idx) => (
-                  <div key={idx} className="bg-white p-4 rounded-lg border border-brand-brown/10 shadow-sm space-y-1.5">
-                    <span className="w-6 h-6 rounded-full bg-brand-maroon text-white flex items-center justify-center font-bold text-[10px]">
-                      {idx + 1}
-                    </span>
-                    <p className="text-brand-black font-medium leading-normal">{fact}</p>
-                  </div>
-                ))}
+          {/* Key Heritage Highlights */}
+          <div className="bg-cream p-6 rounded-xl border border-brand-brown/15 space-y-4">
+            <h4 className="sub-nav-label text-brand-maroon text-xs tracking-wider">HERITAGE HIGHLIGHTS & ARCHITECTURE</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-sans text-xs">
+              <div className="bg-white p-4 rounded-lg border border-brand-brown/10 shadow-sm space-y-1.5">
+                <span className="w-6 h-6 rounded-full bg-brand-maroon text-white flex items-center justify-center font-bold text-[10px]">
+                  1
+                </span>
+                <p className="text-brand-black font-medium leading-normal">
+                  UNESCO & Archaeological Survey of India (ASI) protected heritage monument.
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-brand-brown/10 shadow-sm space-y-1.5">
+                <span className="w-6 h-6 rounded-full bg-brand-maroon text-white flex items-center justify-center font-bold text-[10px]">
+                  2
+                </span>
+                <p className="text-brand-black font-medium leading-normal">
+                  Authentic ancient brick and stone masonry reflecting Mauryan & Gupta period craft.
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-brand-brown/10 shadow-sm space-y-1.5">
+                <span className="w-6 h-6 rounded-full bg-brand-maroon text-white flex items-center justify-center font-bold text-[10px]">
+                  3
+                </span>
+                <p className="text-brand-black font-medium leading-normal">
+                  Guided pilgrimage pathways with certified local heritage scholars available on site.
+                </p>
               </div>
             </div>
-          )}
+          </div>
 
-          {/* Location Technical Specs */}
+          {/* Technical Specs */}
           <div className="bg-white p-6 rounded-xl border border-brand-brown/15 space-y-4">
             <h4 className="sub-nav-label text-brand-maroon text-xs">SITE SPECIFICATIONS</h4>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-sans">
               <div>
                 <span className="text-brand-brown/70 block text-[10px] sub-nav-label">DISTRICT</span>
-                <span className="font-bold text-brand-black text-sm">{destination.district?.name || 'N/A'}</span>
-              </div>
-              <div>
-                <span className="text-brand-brown/70 block text-[10px] sub-nav-label">CIRCUIT</span>
-                <span className="font-bold text-brand-black text-sm">{destination.circuit?.name || 'Heritage Circuit'}</span>
+                <span className="font-bold text-brand-black text-sm">{destination.district?.name || 'Bihar'}</span>
               </div>
               <div>
                 <span className="text-brand-brown/70 block text-[10px] sub-nav-label">CATEGORY</span>
                 <span className="font-bold text-brand-black text-sm">{destination.category}</span>
+              </div>
+              <div>
+                <span className="text-brand-brown/70 block text-[10px] sub-nav-label">CIRCUIT TRAIL</span>
+                <span className="font-bold text-brand-black text-sm">{destination.circuit?.name || 'Heritage Trail'}</span>
               </div>
               <div>
                 <span className="text-brand-brown/70 block text-[10px] sub-nav-label">GPS COORDINATES</span>
@@ -136,7 +149,7 @@ export const DestinationDetailPage: React.FC = () => {
       )
     },
     {
-      id: 'interactive-map',
+      id: 'map',
       label: 'INTERACTIVE MAP & NEARBY STAYS',
       content: (
         <div className="space-y-4">
@@ -149,31 +162,28 @@ export const DestinationDetailPage: React.FC = () => {
     },
     {
       id: 'gallery',
-      label: 'PHOTO GALLERY',
+      label: `PHOTO GALLERY (${galleryImages.length})`,
       content: (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <span className="sub-nav-label text-brand-maroon text-xs">PHOTOGRAPHIC COLLECTION ({galleryImages.length})</span>
-            <span className="text-xs text-brand-brown font-sans">Click image to enlarge</span>
+            {galleryImages.length > 0 && <span className="text-xs text-brand-brown font-sans">Click image to enlarge</span>}
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {galleryImages.map((imgUrl, idx) => (
-              <div
-                key={idx}
-                onClick={() => {
-                  setLightboxIndex(idx);
-                  setLightboxOpen(true);
-                }}
-                className="group relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer border border-brand-brown/15 shadow-sm hover:shadow-md transition-all"
-              >
-                <img src={imgUrl} alt={`${destination.name} ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
-                  <Eye className="w-6 h-6 text-brand-gold" />
-                </div>
-              </div>
-            ))}
-          </div>
+          {galleryImages.length > 0 ? (
+            <PhotoMosaic
+              images={galleryImages}
+              altPrefix={destination.name}
+              onImageClick={(idx) => {
+                setLightboxIndex(idx);
+                setLightboxOpen(true);
+              }}
+            />
+          ) : (
+            <div className="bg-white p-8 rounded-xl border border-brand-brown/15 text-center text-brand-brown/70 font-serif">
+              No photo gallery images available for this destination.
+            </div>
+          )}
         </div>
       )
     },
@@ -256,6 +266,7 @@ export const DestinationDetailPage: React.FC = () => {
             <span className="text-xs sub-nav-label bg-brand-gold text-brand-black px-3 py-1 rounded font-bold">
               {destination.category}
             </span>
+            <FavoriteButton targetType="destination" targetId={destination.id} />
 
             {isVerified ? (
               <span className="text-xs sub-nav-label bg-emerald-800 text-white px-3 py-1 rounded-full font-bold flex items-center space-x-1">

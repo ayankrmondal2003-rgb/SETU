@@ -32,73 +32,108 @@ function calculateDistanceKm(lat1: number, lon1: number, lat2: number, lon2: num
 // Map Bounds Auto-Fitter Component
 const MapBoundsController: React.FC<{
   center: [number, number];
+  spots?: Array<{ latitude: number; longitude: number }>;
   targetPoint?: [number, number] | null;
-}> = ({ center, targetPoint }) => {
+}> = ({ center, spots = [], targetPoint }) => {
   const map = useMap();
 
   useEffect(() => {
+    const points: [number, number][] = spots
+      .filter(s => s && !isNaN(Number(s.latitude)) && !isNaN(Number(s.longitude)))
+      .map(s => [Number(s.latitude), Number(s.longitude)]);
+
     if (targetPoint) {
-      const bounds = L.latLngBounds([center, targetPoint]);
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
-    } else {
-      map.setView(center, 13);
+      points.push(targetPoint);
     }
-  }, [map, center, targetPoint]);
+
+    if (points.length > 1) {
+      const bounds = L.latLngBounds(points);
+      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 14 });
+    } else if (points.length === 1) {
+      map.setView(points[0], 13);
+    } else {
+      map.setView(center, 12);
+    }
+  }, [map, center, spots, targetPoint]);
 
   return null;
 };
 
 export interface GenericSpot {
   id: string;
-  name: string;
+  name?: string;
+  title?: string;
   latitude: number;
   longitude: number;
   heroImage?: string;
   districtName?: string;
+  district?: { name: string };
 }
 
 interface SpotInteractiveMapProps {
   destination?: Pick<Destination, 'id' | 'name' | 'latitude' | 'longitude' | 'heroImage'> | Pick<TourismEvent, 'id' | 'title' | 'latitude' | 'longitude' | 'heroImage'> | GenericSpot;
   spot?: GenericSpot;
+  spots?: Array<Destination | GenericSpot>;
   vendors?: Vendor[];
 }
 
-export const SpotInteractiveMap: React.FC<SpotInteractiveMapProps> = ({ destination, spot, vendors = [] }) => {
+export const SpotInteractiveMap: React.FC<SpotInteractiveMapProps> = ({ destination, spot, spots, vendors = [] }) => {
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
 
-  const targetObj = spot || destination;
-  const spotName = spot?.name || (destination ? ('name' in destination ? destination.name : (destination as any).title) : 'Location');
-  const districtName = spot?.districtName || (destination && 'district' in destination ? (typeof (destination as any).district === 'string' ? (destination as any).district : (destination as any).district?.name) : 'Bihar');
+  const rawSpots = spots && spots.length > 0 ? spots : (spot ? [spot] : (destination ? [destination] : []));
+  const validSpots = rawSpots.filter(
+    (s): s is any => s && !isNaN(Number(s.latitude)) && !isNaN(Number(s.longitude)) && Number(s.latitude) !== 0 && Number(s.longitude) !== 0
+  );
 
-  // Validate coordinates
-  const spotLat = targetObj ? Number(targetObj.latitude) : NaN;
-  const spotLng = targetObj ? Number(targetObj.longitude) : NaN;
-  const hasValidSpotCoords = !isNaN(spotLat) && !isNaN(spotLng) && spotLat !== 0 && spotLng !== 0;
-
-  if (!hasValidSpotCoords) {
+  if (validSpots.length === 0) {
     return (
       <div className="bg-cream border border-brand-brown/15 p-8 rounded-xl text-center space-y-3">
         <AlertCircle className="w-10 h-10 text-amber-600 mx-auto" />
         <h3 className="font-serif text-xl font-bold text-brand-black">Interactive Map Unavailable</h3>
         <p className="text-sm font-serif text-brand-brown">
-          Coordinates for {spotName} are currently pending official verification.
+          Location coordinates are currently pending official verification.
         </p>
       </div>
     );
   }
 
-  const spotCenter: [number, number] = [spotLat, spotLng];
+  // Compute map center
+  const avgLat = validSpots.reduce((sum, s) => sum + Number(s.latitude), 0) / validSpots.length;
+  const avgLng = validSpots.reduce((sum, s) => sum + Number(s.longitude), 0) / validSpots.length;
+  const spotCenter: [number, number] = [avgLat, avgLng];
 
-  // Filter valid vendors with coordinates
-  const validVendors = vendors.filter(
-    (v) => v.latitude && v.longitude && !isNaN(Number(v.latitude)) && !isNaN(Number(v.longitude))
-  );
+  // Deduplicate vendors by id
+  const vendorMap = new Map<string, Vendor>();
+  vendors.forEach(v => {
+    if (v && v.id && v.latitude && v.longitude && !isNaN(Number(v.latitude)) && !isNaN(Number(v.longitude))) {
+      if (!vendorMap.has(v.id)) {
+        vendorMap.set(v.id, v);
+      }
+    }
+  });
+  const validVendors = Array.from(vendorMap.values());
+
+  // Find closest spot to a given vendor
+  const getClosestSpotToVendor = (v: Vendor) => {
+    let closest = validSpots[0];
+    let minD = Infinity;
+    for (const s of validSpots) {
+      const d = calculateDistanceKm(Number(s.latitude), Number(s.longitude), Number(v.latitude), Number(v.longitude));
+      if (d < minD) {
+        minD = d;
+        closest = s;
+      }
+    }
+    return { spot: closest, distance: minD };
+  };
+
+  const closestToSelected = selectedVendor ? getClosestSpotToVendor(selectedVendor) : null;
 
   // Create custom Leaflet Icons
   const createCustomIcon = (bgColor: string, symbol: string) => {
     return L.divIcon({
       className: 'custom-leaflet-marker',
-      html: `<div style="background-color: ${bgColor}; width: 34px; height: 34px; border-radius: 50%; display: flex; items-center; justify-content: center; color: white; font-weight: bold; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.3); font-size: 16px;">${symbol}</div>`,
+      html: `<div style="background-color: ${bgColor}; width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border: 2px solid white; box-shadow: 0 4px 6px rgba(0,0,0,0.3); font-size: 16px;">${symbol}</div>`,
       iconSize: [34, 34],
       iconAnchor: [17, 34],
       popupAnchor: [0, -34]
@@ -131,9 +166,7 @@ export const SpotInteractiveMap: React.FC<SpotInteractiveMapProps> = ({ destinat
     ? [Number(selectedVendor.latitude), Number(selectedVendor.longitude)]
     : null;
 
-  const calculatedDistance = selectedVendor
-    ? calculateDistanceKm(spotLat, spotLng, Number(selectedVendor.latitude), Number(selectedVendor.longitude))
-    : null;
+  const calculatedDistance = closestToSelected ? closestToSelected.distance : null;
 
   return (
     <div className="bg-cream border border-brand-brown/15 rounded-2xl overflow-hidden shadow-lg space-y-0">
@@ -155,12 +188,12 @@ export const SpotInteractiveMap: React.FC<SpotInteractiveMapProps> = ({ destinat
       </div>
 
       {/* Main Map + Sidebar Split View */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[460px]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[350px] sm:min-h-[420px] lg:min-h-[460px]">
         {/* Leaflet Map Canvas */}
-        <div className="lg:col-span-8 relative h-[380px] lg:h-[480px]">
+        <div className="lg:col-span-8 relative h-[320px] sm:h-[400px] lg:h-[480px]">
           <MapContainer
             center={spotCenter}
-            zoom={13}
+            zoom={12}
             scrollWheelZoom={false}
             className="w-full h-full z-10"
           >
@@ -169,26 +202,47 @@ export const SpotInteractiveMap: React.FC<SpotInteractiveMapProps> = ({ destinat
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
 
-            <MapBoundsController center={spotCenter} targetPoint={targetCoords} />
+            <MapBoundsController center={spotCenter} spots={validSpots} targetPoint={targetCoords} />
 
-            {/* Destination / Event Spot Marker */}
-            <Marker position={spotCenter} icon={spotIcon}>
-              <Popup className="font-serif">
-                <div className="p-1 space-y-1">
-                  <h4 className="font-bold text-brand-maroon text-sm">{spotName}</h4>
-                  <p className="text-xs text-slate-600">{districtName}</p>
-                  <span className="text-[9px] bg-brand-gold text-brand-black px-2 py-0.5 rounded font-bold">
-                    EVENT / SPOT
-                  </span>
-                </div>
-              </Popup>
-            </Marker>
+            {/* Destination / Event / Circuit Spot Markers */}
+            {validSpots.map((s, idx) => {
+              const sLat = Number(s.latitude);
+              const sLng = Number(s.longitude);
+              const sName = s.name || s.title || `Stop ${idx + 1}`;
+              const sDistrict = s.district?.name || s.districtName || 'Bihar';
+
+              return (
+                <Marker key={s.id || idx} position={[sLat, sLng]} icon={spotIcon}>
+                  <Popup className="font-serif">
+                    <div className="p-1 space-y-1">
+                      <h4 className="font-bold text-brand-maroon text-sm">{sName}</h4>
+                      <p className="text-xs text-slate-600">{sDistrict}</p>
+                      <span className="text-[9px] bg-brand-gold text-brand-black px-2 py-0.5 rounded font-bold">
+                        {validSpots.length > 1 ? `STOP ${idx + 1}` : 'HERITAGE SPOT'}
+                      </span>
+                    </div>
+                  </Popup>
+                </Marker>
+              );
+            })}
+
+            {/* Circuit Trail Polyline */}
+            {validSpots.length > 1 && (
+              <Polyline
+                positions={validSpots.map(s => [Number(s.latitude), Number(s.longitude)])}
+                pathOptions={{
+                  color: '#991B1B',
+                  weight: 4,
+                  dashArray: '8, 8',
+                  opacity: 0.85
+                }}
+              />
+            )}
 
             {/* Nearby Vendors Markers */}
             {validVendors.map((v) => {
               const vLat = Number(v.latitude);
               const vLng = Number(v.longitude);
-              const isSelected = selectedVendor?.id === v.id;
 
               return (
                 <Marker
@@ -219,14 +273,17 @@ export const SpotInteractiveMap: React.FC<SpotInteractiveMapProps> = ({ destinat
               );
             })}
 
-            {/* Selected Route Polyline */}
-            {targetCoords && (
+            {/* Selected Route Polyline from closest stop to selected vendor */}
+            {targetCoords && closestToSelected && (
               <Polyline
-                positions={[spotCenter, targetCoords]}
+                positions={[
+                  [Number(closestToSelected.spot.latitude), Number(closestToSelected.spot.longitude)],
+                  targetCoords
+                ]}
                 pathOptions={{
-                  color: '#991B1B',
+                  color: '#D97706',
                   weight: 5,
-                  dashArray: '8, 8',
+                  dashArray: '6, 6',
                   opacity: 0.85
                 }}
               />
@@ -245,7 +302,7 @@ export const SpotInteractiveMap: React.FC<SpotInteractiveMapProps> = ({ destinat
         </div>
 
         {/* Sidebar List of Nearby Amenities */}
-        <div className="lg:col-span-4 bg-white p-4 sm:p-5 border-t lg:border-t-0 lg:border-l border-brand-brown/15 flex flex-col justify-between overflow-y-auto max-h-[480px]">
+        <div className="lg:col-span-4 bg-white p-4 sm:p-5 border-t lg:border-t-0 lg:border-l border-brand-brown/15 flex flex-col justify-between overflow-y-auto max-h-[360px] sm:max-h-[420px] lg:max-h-[480px]">
           <div className="space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-brand-brown/10">
               <span className="sub-nav-label text-brand-maroon text-xs">NEARBY STAYS & AMENITIES</span>
@@ -255,12 +312,13 @@ export const SpotInteractiveMap: React.FC<SpotInteractiveMapProps> = ({ destinat
             {validVendors.length === 0 ? (
               <div className="py-8 text-center text-xs text-brand-brown font-serif space-y-1">
                 <Store className="w-6 h-6 mx-auto text-brand-gold" />
-                <p>Searching for nearby certified vendors in {districtName || 'this district'}...</p>
+                <p>Searching for nearby certified vendors along this circuit...</p>
               </div>
             ) : (
               <div className="space-y-2.5">
                 {validVendors.map((v) => {
-                  const dist = calculateDistanceKm(spotLat, spotLng, Number(v.latitude), Number(v.longitude));
+                  const closest = getClosestSpotToVendor(v);
+                  const dist = closest.distance;
                   const isSelected = selectedVendor?.id === v.id;
 
                   return (

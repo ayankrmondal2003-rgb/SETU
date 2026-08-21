@@ -27,7 +27,8 @@ export async function getCircuits(req: Request, res: Response, next: NextFunctio
 
     const formatted = circuits.map(c => ({
       ...c,
-      locations: parseJsonField(c.locations, [])
+      locations: parseJsonField(c.locations, []),
+      gallery: parseJsonField(c.gallery, [])
     }));
 
     return res.json({ success: true, count: formatted.length, data: formatted });
@@ -52,16 +53,43 @@ export async function getCircuitBySlug(req: Request, res: Response, next: NextFu
       throw new ApiError(404, 'Circuit not found');
     }
 
+    const districtNames = Array.from(
+      new Set(
+        circuit.destinations
+          .map(d => d.district?.name)
+          .filter((name): name is string => Boolean(name))
+      )
+    );
+
+    let nearbyVendors: any[] = [];
+    if (districtNames.length > 0) {
+      nearbyVendors = await prisma.vendor.findMany({
+        where: {
+          OR: districtNames.flatMap(name => [
+            { district: { contains: name } },
+            { city: { contains: name } }
+          ])
+        },
+        take: 20
+      });
+    }
+
+    if (nearbyVendors.length === 0) {
+      nearbyVendors = await prisma.vendor.findMany({ take: 15 });
+    }
+
     const formatted = {
       ...circuit,
       locations: parseJsonField(circuit.locations, []),
+      gallery: parseJsonField(circuit.gallery, []),
       destinations: circuit.destinations.map(d => ({
         ...d,
         gallery: parseJsonField(d.gallery, []),
         travelInformation: parseJsonField(d.travelInformation, {}),
         stays: parseJsonField(d.stays, []),
         recommendations: parseJsonField(d.recommendations, [])
-      }))
+      })),
+      nearbyVendors
     };
 
     return res.json({ success: true, data: formatted });
@@ -189,7 +217,12 @@ export async function getDistricts(req: Request, res: Response, next: NextFuncti
       }
     });
 
-    return res.json({ success: true, count: districts.length, data: districts });
+    const formatted = districts.map(d => ({
+      ...d,
+      gallery: parseJsonField(d.gallery, [])
+    }));
+
+    return res.json({ success: true, count: formatted.length, data: formatted });
   } catch (error) {
     next(error);
   }
@@ -209,7 +242,12 @@ export async function getDistrictBySlug(req: Request, res: Response, next: NextF
       throw new ApiError(404, 'District not found');
     }
 
-    return res.json({ success: true, data: district });
+    const formatted = {
+      ...district,
+      gallery: parseJsonField(district.gallery, [])
+    };
+
+    return res.json({ success: true, data: formatted });
   } catch (error) {
     next(error);
   }
@@ -319,8 +357,49 @@ export async function getEventBySlug(req: Request, res: Response, next: NextFunc
     const formatted = {
       ...event,
       gallery: parseJsonField(event.gallery, []),
+      nearbyRestaurants: parseJsonField(event.nearbyRestaurants, []),
       nearbyVendors,
       nearbyAttractions
+    };
+
+    return res.json({ success: true, data: formatted });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// 5. Cuisine / Taste Items
+export async function getCuisineItems(req: Request, res: Response, next: NextFunction) {
+  try {
+    const items = await prisma.cuisineItem.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const formatted = items.map(item => ({
+      ...item,
+      restaurants: parseJsonField(item.restaurants, [])
+    }));
+
+    return res.json({ success: true, count: formatted.length, data: formatted });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getCuisineItemBySlug(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { slug } = req.params;
+    const item = await prisma.cuisineItem.findUnique({
+      where: { slug }
+    });
+
+    if (!item) {
+      throw new ApiError(404, 'Cuisine item not found');
+    }
+
+    const formatted = {
+      ...item,
+      restaurants: parseJsonField(item.restaurants, [])
     };
 
     return res.json({ success: true, data: formatted });

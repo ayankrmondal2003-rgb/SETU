@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowUpRight } from 'lucide-react';
 import { useTranslation } from '../../context/LanguageContext';
+import { SetuLogoMark } from '../common/SetuLogoMark';
 
 export const Footer: React.FC = () => {
   const { t } = useTranslation();
@@ -12,8 +13,9 @@ export const Footer: React.FC = () => {
 
         {/* Brand & Manifesto */}
         <div className="md:col-span-4 space-y-6">
-          <Link to="/" className="font-serif text-4xl text-brand-gold tracking-widest block">
-            SETU
+          <Link to="/" className="font-serif text-3xl font-medium tracking-[0.2em] text-brand-gold flex items-center space-x-3 group">
+            <SetuLogoMark className="w-8 h-8 text-brand-gold shrink-0 transition-transform group-hover:scale-105 drop-shadow-[0_0_8px_rgba(198,155,69,0.4)]" />
+            <span className="relative pb-0.5 border-b-2 border-brand-gold/60">SETU</span>
           </Link>
           <p className="text-cream/70 font-serif text-sm leading-relaxed max-w-sm">
             {t('footer.tagline', 'Bridging travelers, local artisans, and sacred heritage across Bihar.')}

@@ -55,7 +55,7 @@ export const CalendarPage: React.FC = () => {
   ];
 
   return (
-    <div className="pt-28 pb-24 px-6 md:px-12 max-w-7xl mx-auto space-y-8">
+    <div className="pt-28 pb-24 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto my-6 bg-cream/85 backdrop-blur-sm rounded-2xl border border-brand-brown/15 p-4 sm:p-6 md:p-10 shadow-lg space-y-8">
       {/* Header */}
       <div className="border-b border-brand-brown/15 pb-6 space-y-2">
         <div className="flex items-center justify-between flex-wrap gap-4">
@@ -64,20 +64,20 @@ export const CalendarPage: React.FC = () => {
             {t('calendar.verifiedBadge', '✓ Official 2026 Calendar Verified')}
           </span>
         </div>
-        <h1 className="text-4xl md:text-6xl font-serif text-brand-black">{t('calendar.title', 'Festivals & Events 2026')}</h1>
-        <p className="text-base font-serif text-brand-black/75 max-w-2xl leading-relaxed">
+        <h1 className="text-3xl sm:text-4xl md:text-6xl font-serif text-brand-black">{t('calendar.title', 'Festivals & Events 2026')}</h1>
+        <p className="text-sm sm:text-base font-serif text-brand-black/75 max-w-2xl leading-relaxed">
           {t('calendar.subtitle', 'Discover year-round cultural fairs, sacred pilgrimage melas, music festivals, and heritage celebrations across all 38 districts of Bihar.')}
         </p>
       </div>
 
       {/* Control Bar: View Modes, Month Switcher & Categories */}
-      <div className="bg-cream p-5 rounded-lg border border-brand-brown/15 shadow-sm space-y-4">
+      <div className="bg-cream p-4 sm:p-5 rounded-lg border border-brand-brown/15 shadow-sm space-y-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-brand-brown/10 pb-4">
           {/* View Mode Toggle */}
-          <div className="flex items-center space-x-2 bg-white p-1 rounded border border-brand-brown/15">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto bg-white p-1 rounded border border-brand-brown/15">
             <button
               onClick={() => setViewMode('MONTH')}
-              className={`text-xs sub-nav-label px-3 py-1.5 rounded transition-all ${
+              className={`text-xs sub-nav-label px-3 py-2 rounded transition-all text-center ${
                 viewMode === 'MONTH' ? 'bg-brand-black text-brand-gold font-bold' : 'text-brand-black/70 hover:text-brand-black'
               }`}
             >
@@ -85,7 +85,7 @@ export const CalendarPage: React.FC = () => {
             </button>
             <button
               onClick={() => setViewMode('ALL')}
-              className={`text-xs sub-nav-label px-3 py-1.5 rounded transition-all ${
+              className={`text-xs sub-nav-label px-3 py-2 rounded transition-all text-center ${
                 viewMode === 'ALL' ? 'bg-brand-black text-brand-gold font-bold' : 'text-brand-black/70 hover:text-brand-black'
               }`}
             >
@@ -95,7 +95,7 @@ export const CalendarPage: React.FC = () => {
 
           {/* Month Navigator */}
           {viewMode === 'MONTH' && (
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
               <button
                 onClick={prevMonth}
                 className="p-2 border border-brand-brown/20 rounded bg-white hover:bg-cream-light text-brand-black"
@@ -104,7 +104,7 @@ export const CalendarPage: React.FC = () => {
                 <ChevronLeft className="w-5 h-5" />
               </button>
 
-              <span className="font-serif text-2xl font-bold text-brand-black min-w-[200px] text-center">
+              <span className="font-serif text-xl sm:text-2xl font-bold text-brand-black min-w-[140px] sm:min-w-[200px] text-center">
                 {format(currentMonth, 'MMMM yyyy')}
               </span>
 
@@ -163,7 +163,7 @@ export const CalendarPage: React.FC = () => {
             <span>Showing <strong className="text-brand-black">{events.length}</strong> verified event(s) {viewMode === 'MONTH' ? `for ${format(currentMonth, 'MMMM yyyy')}` : 'in 2026'}</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {events.map((ev) => (
               <EventCard key={ev.id} event={ev} />
             ))}

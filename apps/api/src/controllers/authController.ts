@@ -88,7 +88,8 @@ export async function register(req: Request, res: Response, next: NextFunction) 
         email: user.email,
         role: user.role,
         avatar: user.avatar,
-        phone: user.phone
+        phone: user.phone,
+        isPremium: user.isPremium
       }
     });
   } catch (error) {
@@ -140,10 +141,10 @@ export async function login(req: Request, res: Response, next: NextFunction) {
         role: user.role,
         avatar: user.avatar,
         phone: user.phone,
+        isPremium: user.isPremium,
         vendor: user.vendor ? {
           id: user.vendor.id,
           businessName: user.vendor.businessName,
-          businessType: user.vendor.businessType,
           status: user.vendor.status
         } : null
       }
@@ -185,10 +186,10 @@ export async function getMe(req: AuthenticatedRequest, res: Response, next: Next
         role: user.role,
         avatar: user.avatar,
         phone: user.phone,
+        isPremium: user.isPremium,
         vendor: user.vendor ? {
           id: user.vendor.id,
           businessName: user.vendor.businessName,
-          businessType: user.vendor.businessType,
           status: user.vendor.status
         } : null
       }

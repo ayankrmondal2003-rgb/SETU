@@ -56,6 +56,17 @@ export async function createOrder(req: AuthenticatedRequest, res: Response, next
       }
     });
 
+    // Auto-create Notification for vendor
+    await prisma.notification.create({
+      data: {
+        vendorId: offering.vendorId,
+        type: 'booking_new',
+        title: 'New Booking Order',
+        message: `New booking order #${orderNumber} received for "${offering.title}".`,
+        relatedOrderId: order.id
+      }
+    }).catch(() => {});
+
     return res.status(201).json({
       success: true,
       data: order,

@@ -14,6 +14,8 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import favoriteRoutes from './routes/favoriteRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
+import cityHubRoutes from './routes/cityHubRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
 
 const app = express();
 
@@ -22,7 +24,9 @@ app.use(helmet({
 }));
 
 app.use(cors({
-  origin: [env.FRONTEND_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: (origin, callback) => {
+    callback(null, true);
+  },
   credentials: true
 }));
 
@@ -38,6 +42,7 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api', tourismRoutes); // /api/circuits, /api/destinations, /api/districts, /api/events
+app.use('/api', cityHubRoutes); // /api/city-hubs, /api/city-hubs/:slug
 app.use('/api/vendors', vendorRoutes);
 app.use('/api/offerings', offeringRoutes);
 app.use('/api/orders', orderRoutes);
@@ -45,6 +50,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/favorites', favoriteRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/conversations', messageRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

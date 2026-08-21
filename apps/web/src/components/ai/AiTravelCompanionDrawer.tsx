@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { X, Sparkles, Send, Calendar, MapPin, Compass, Utensils, CheckCircle2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { X, Sparkles, Send, Calendar, MapPin, Compass, Utensils, CheckCircle2, Lock } from 'lucide-react';
 import api from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
 import { AiItineraryResponse } from '../../types';
 
 interface AiTravelCompanionDrawerProps {
@@ -9,11 +11,13 @@ interface AiTravelCompanionDrawerProps {
 }
 
 export const AiTravelCompanionDrawer: React.FC<AiTravelCompanionDrawerProps> = ({ isOpen, onClose }) => {
+  const { user } = useAuth();
   const [interests, setInterests] = useState<string[]>(['Buddhist heritage', 'Mithila art']);
   const [duration, setDuration] = useState<number>(3);
   const [startingCity, setStartingCity] = useState<string>('Patna');
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<AiItineraryResponse | null>(null);
+  const [tier, setTier] = useState<'free' | 'premium' | null>(null);
 
   const availableInterests = [
     'Buddhist heritage',
@@ -43,6 +47,7 @@ export const AiTravelCompanionDrawer: React.FC<AiTravelCompanionDrawerProps> = (
 
       if (res.data.success) {
         setResult(res.data.data);
+        setTier(res.data.tier || null);
       }
     } catch (err) {
       console.error('AI Travel Companion Error:', err);
@@ -52,6 +57,52 @@ export const AiTravelCompanionDrawer: React.FC<AiTravelCompanionDrawerProps> = (
   };
 
   if (!isOpen) return null;
+
+  // Not signed in — AI Companion now requires auth (was previously open to anyone)
+  if (!user) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex justify-end transition-opacity duration-300">
+        <div className="bg-cream w-full max-w-xl h-full shadow-2xl overflow-y-auto flex flex-col p-6 md:p-8 border-l border-brand-brown/20">
+          <div className="flex items-center justify-between border-b border-brand-brown/15 pb-4 mb-6">
+            <h3 className="font-serif text-2xl text-brand-black">SETU AI Companion</h3>
+            <button onClick={onClose} className="p-2 text-brand-black/60 hover:text-brand-black">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-grow flex flex-col items-center justify-center text-center space-y-4">
+            <Lock className="w-8 h-8 text-brand-gold" />
+            <p className="font-serif text-brand-black">Sign in to start planning your Bihar journey with the SETU AI Companion.</p>
+            <Link
+              to="/login"
+              onClick={onClose}
+              className="px-6 py-3 bg-brand-black text-brand-gold sub-nav-label text-xs tracking-widest rounded hover:bg-brand-maroon hover:text-white transition-all"
+            >
+              SIGN IN
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Signed in but not a customer account (VENDOR/ADMIN) — AI Companion is a TOURIST feature
+  if (user.role !== 'TOURIST') {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex justify-end transition-opacity duration-300">
+        <div className="bg-cream w-full max-w-xl h-full shadow-2xl overflow-y-auto flex flex-col p-6 md:p-8 border-l border-brand-brown/20">
+          <div className="flex items-center justify-between border-b border-brand-brown/15 pb-4 mb-6">
+            <h3 className="font-serif text-2xl text-brand-black">SETU AI Companion</h3>
+            <button onClick={onClose} className="p-2 text-brand-black/60 hover:text-brand-black">
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+          <div className="flex-grow flex flex-col items-center justify-center text-center space-y-3">
+            <p className="font-serif text-brand-black">The SETU AI Companion is available to customer accounts.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex justify-end transition-opacity duration-300">
@@ -114,6 +165,9 @@ export const AiTravelCompanionDrawer: React.FC<AiTravelCompanionDrawerProps> = (
                   onChange={(e) => setDuration(Number(e.target.value))}
                   className="w-full bg-white border border-brand-brown/20 rounded p-2.5 text-sm font-sans text-brand-black focus:outline-none focus:border-brand-gold"
                 />
+                {!user.isPremium && (
+                  <p className="text-[10px] font-sans text-brand-brown/60 mt-1">Free plan generates a 1-day preview. SETU Plus unlocks your full {duration}-day itinerary.</p>
+                )}
               </div>
 
               <div>
@@ -190,8 +244,24 @@ export const AiTravelCompanionDrawer: React.FC<AiTravelCompanionDrawerProps> = (
                 ))}
               </div>
 
+              {/* SETU Plus Upgrade CTA (free tier only) */}
+              {tier === 'free' && (
+                <div className="bg-brand-maroon/10 border border-brand-gold/40 p-4 rounded space-y-3 text-center">
+                  <p className="text-xs font-serif text-brand-black">
+                    This is a 1-day preview. Upgrade to <strong>SETU Plus</strong> for your full multi-day itinerary, local insider tips, and food recommendations.
+                  </p>
+                  <Link
+                    to="/account"
+                    onClick={onClose}
+                    className="inline-block px-5 py-2.5 bg-brand-black text-brand-gold sub-nav-label text-xs tracking-widest rounded hover:bg-brand-maroon hover:text-white transition-all"
+                  >
+                    UPGRADE TO SETU PLUS — ₹99/MO
+                  </Link>
+                </div>
+              )}
+
               {/* Insider Tips */}
-              {result.insiderTips && (
+              {result.insiderTips && result.insiderTips.length > 0 && (
                 <div className="bg-brand-black text-cream p-4 rounded space-y-2 text-xs font-serif">
                   <span className="sub-nav-label text-brand-gold text-[10px]">LOCAL INSIDER TIPS</span>
                   <ul className="space-y-1">

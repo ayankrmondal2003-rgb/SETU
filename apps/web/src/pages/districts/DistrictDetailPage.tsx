@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MapPin, ArrowLeft } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import api from '../../api/client';
 import { District } from '../../types';
 import { DestinationCard } from '../../components/tourism/DestinationCard';
 import { InteractiveMap } from '../../components/maps/InteractiveMap';
+import { PhotoMosaic } from '../../components/common/PhotoMosaic';
+import { Lightbox } from '../../components/common/Lightbox';
 
 export const DistrictDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [district, setDistrict] = useState<District | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Lightbox State
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
     async function loadDistrict() {
@@ -40,6 +46,8 @@ export const DistrictDetailPage: React.FC = () => {
     );
   }
 
+  const galleryImages = (district.gallery && district.gallery.length > 0) ? district.gallery : [];
+
   return (
     <div className="pt-24 pb-24">
       {/* Banner */}
@@ -63,6 +71,24 @@ export const DistrictDetailPage: React.FC = () => {
           <h3 className="sub-nav-label text-brand-maroon">DISTRICT OVERVIEW</h3>
           <p className="font-serif text-lg text-brand-black/85 leading-relaxed">{district.description}</p>
         </div>
+
+        {/* Photo Gallery */}
+        {galleryImages.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="sub-nav-label text-brand-maroon">PHOTOGRAPHIC GALLERY OF {district.name.toUpperCase()}</h3>
+              <span className="text-xs text-brand-brown font-sans">Click image to enlarge</span>
+            </div>
+            <PhotoMosaic
+              images={galleryImages}
+              altPrefix={`${district.name} District`}
+              onImageClick={(idx) => {
+                setLightboxIndex(idx);
+                setLightboxOpen(true);
+              }}
+            />
+          </div>
+        )}
 
         {/* Key Destinations */}
         <div className="space-y-6">
@@ -89,6 +115,15 @@ export const DistrictDetailPage: React.FC = () => {
           />
         </div>
       </div>
+
+      {/* Lightbox Modal */}
+      <Lightbox
+        images={galleryImages}
+        currentIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onNavigate={(newIdx) => setLightboxIndex(newIdx)}
+      />
     </div>
   );
 };

@@ -1,8 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
+import { getHomeRouteForRole } from '../../utils/navigation';
+import { User } from '../../types';
 
 export const RegisterPage: React.FC = () => {
   const { register } = useAuth();
@@ -18,8 +21,11 @@ export const RegisterPage: React.FC = () => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [businessName, setBusinessName] = useState('');
   const [businessType, setBusinessType] = useState('Tour Operator');
+  const [registeredUser, setRegisteredUser] = useState<User | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [showSuccessAnim, setShowSuccessAnim] = useState(false);
@@ -37,7 +43,7 @@ export const RegisterPage: React.FC = () => {
     setLoading(true);
 
     try {
-      await register({
+      const newUser = await register({
         name,
         email,
         phone,
@@ -47,6 +53,8 @@ export const RegisterPage: React.FC = () => {
         businessType: role === 'VENDOR' ? businessType : undefined
       });
 
+      setRegisteredUser(newUser);
+      localStorage.setItem('setu_entry_completed', 'true');
       showToast(`Account created successfully as ${role}!`, 'success');
       setShowSuccessAnim(true);
     } catch (err: any) {
@@ -61,15 +69,16 @@ export const RegisterPage: React.FC = () => {
       <LoadingScreen
         brandText={role === 'VENDOR' ? 'ACCOUNT CREATED. AWAITING ADMIN APPROVAL...' : 'ACCOUNT CREATED. WELCOME TO SETU!'}
         onComplete={() => {
-          navigate(role === 'VENDOR' ? '/vendor/dashboard' : '/account');
+          localStorage.setItem('setu_entry_completed', 'true');
+          navigate(getHomeRouteForRole(registeredUser));
         }}
       />
     );
   }
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col justify-center items-center px-6 py-24">
-      <div className="w-full max-w-lg bg-white border border-brand-brown/15 p-8 md:p-10 rounded shadow-xl">
+    <div className="min-h-screen bg-black/35 backdrop-blur-sm flex flex-col justify-center items-center px-4 sm:px-6 py-24">
+      <div className="w-full max-w-lg bg-white/95 backdrop-blur-md border border-brand-brown/25 p-5 sm:p-8 md:p-10 rounded-xl shadow-2xl">
         <div className="text-center space-y-2 mb-8">
           <Link to="/" className="font-serif text-4xl text-brand-gold tracking-widest block">
             SETU
@@ -187,27 +196,55 @@ export const RegisterPage: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs sub-nav-label text-brand-black/70 mb-1.5">PASSWORD</label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full bg-cream-light border border-brand-brown/20 rounded p-3 text-sm focus:outline-none focus:border-brand-gold text-brand-black"
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-cream-light border border-brand-brown/20 rounded p-3 pr-10 text-sm focus:outline-none focus:border-brand-gold text-brand-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-brown/60 hover:text-brand-black transition-colors focus:outline-none"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
             <div>
               <label className="block text-xs sub-nav-label text-brand-black/70 mb-1.5">CONFIRM PASSWORD</label>
-              <input
-                type="password"
-                required
-                minLength={6}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full bg-cream-light border border-brand-brown/20 rounded p-3 text-sm focus:outline-none focus:border-brand-gold text-brand-black"
-              />
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  required
+                  minLength={6}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-cream-light border border-brand-brown/20 rounded p-3 pr-10 text-sm focus:outline-none focus:border-brand-gold text-brand-black"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-brown/60 hover:text-brand-black transition-colors focus:outline-none"
+                  aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
 

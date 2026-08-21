@@ -95,16 +95,17 @@ export const VendorDashboardPage: React.FC = () => {
     );
   }
 
-  const totalRevenue = orders
-    .filter(o => o.paymentStatus === 'PAID')
-    .reduce((sum, o) => sum + o.amount, 0);
+  const paidOrders = orders.filter(o => o.paymentStatus === 'PAID');
+  const grossSales = paidOrders.reduce((sum, o) => sum + o.amount, 0);
+  const setuCommission = paidOrders.reduce((sum, o) => sum + (o.commissionAmount || 0), 0);
+  const netEarnings = paidOrders.reduce((sum, o) => sum + (o.vendorEarnings || 0), 0);
 
   return (
-    <div className="pt-28 pb-24 px-6 md:px-12 max-w-7xl mx-auto space-y-8">
+    <div className="pt-28 pb-24 px-4 sm:px-6 md:px-12 max-w-7xl mx-auto my-6 bg-cream/85 backdrop-blur-sm rounded-2xl border border-brand-brown/15 p-4 sm:p-6 md:p-10 shadow-lg space-y-8">
       {/* Vendor Profile & Status Alert */}
-      <div className="bg-cream p-8 rounded border border-brand-brown/15 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-        <div className="flex items-center space-x-5">
-          <div className="w-16 h-16 rounded-full bg-brand-maroon text-white flex items-center justify-center font-serif text-2xl font-bold border-2 border-brand-gold">
+      <div className="bg-cream p-4 sm:p-8 rounded border border-brand-brown/15 flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center space-x-0 sm:space-x-5 text-center sm:text-left gap-3">
+          <div className="w-16 h-16 rounded-full bg-brand-maroon text-white flex items-center justify-center font-serif text-2xl font-bold border-2 border-brand-gold shrink-0">
             <Store className="w-8 h-8 text-brand-gold" />
           </div>
           <div>
@@ -143,10 +144,20 @@ export const VendorDashboardPage: React.FC = () => {
       )}
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded border border-brand-brown/15 shadow-sm space-y-2">
-          <span className="text-[10px] sub-nav-label text-brand-brown/70">TOTAL REVENUE</span>
-          <p className="font-serif text-3xl font-bold text-brand-black">₹{totalRevenue.toLocaleString('en-IN')}</p>
+          <span className="text-[10px] sub-nav-label text-brand-brown/70">GROSS SALES</span>
+          <p className="font-serif text-3xl font-bold text-brand-black">₹{grossSales.toLocaleString('en-IN')}</p>
+        </div>
+
+        <div className="bg-white p-6 rounded border border-brand-brown/15 shadow-sm space-y-2">
+          <span className="text-[10px] sub-nav-label text-brand-brown/70">SETU COMMISSION (7%)</span>
+          <p className="font-serif text-3xl font-bold text-brand-maroon">₹{setuCommission.toLocaleString('en-IN')}</p>
+        </div>
+
+        <div className="bg-white p-6 rounded border border-brand-brown/15 shadow-sm space-y-2">
+          <span className="text-[10px] sub-nav-label text-brand-brown/70">NET EARNINGS</span>
+          <p className="font-serif text-3xl font-bold text-emerald-700">₹{netEarnings.toLocaleString('en-IN')}</p>
         </div>
 
         <div className="bg-white p-6 rounded border border-brand-brown/15 shadow-sm space-y-2">

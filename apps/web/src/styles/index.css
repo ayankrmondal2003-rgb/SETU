@@ -19,10 +19,10 @@
 /* Custom Editorial Utilities */
 .hero-heading {
   font-family: 'Playfair Display', serif;
-  font-size: clamp(48px, 11vw, 177px);
-  line-height: clamp(52px, 10.5vw, 142px);
+  font-size: clamp(40px, 7.5vw, 120px);
+  line-height: clamp(46px, 8vw, 128px);
   font-weight: 400;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.015em;
 }
 
 .sub-nav-label {

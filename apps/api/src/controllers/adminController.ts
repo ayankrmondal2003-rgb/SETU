@@ -79,6 +79,18 @@ export async function updateVendorStatus(req: AuthenticatedRequest, res: Respons
       include: { user: { select: { name: true, email: true } } }
     });
 
+    // Auto-create Notification for vendor on status change
+    await prisma.notification.create({
+      data: {
+        vendorId: vendor.id,
+        type: status === 'APPROVED' ? 'offering_approved' : 'offering_rejected',
+        title: status === 'APPROVED' ? 'Vendor Status Approved' : 'Vendor Status Updated',
+        message: status === 'APPROVED'
+          ? 'Your SETU vendor profile has been approved! You can now publish and manage live offerings.'
+          : `Your vendor account status has been updated to ${status}.`
+      }
+    }).catch(() => {});
+
     return res.json({
       success: true,
       message: `Vendor status updated to ${status}`,

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, ArrowRight } from 'lucide-react';
 import { Destination } from '../../types';
+import { FavoriteButton } from '../common/FavoriteButton';
 
 interface DestinationCardProps {
   destination: Destination;
@@ -17,6 +18,9 @@ export const DestinationCard: React.FC<DestinationCardProps> = ({ destination })
             alt={destination.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           />
+          <div className="absolute top-3 left-3 z-10">
+            <FavoriteButton targetType="destination" targetId={destination.id} />
+          </div>
           <div className="absolute top-3 right-3 bg-brand-black/80 backdrop-blur-sm text-brand-gold text-[10px] sub-nav-label px-2.5 py-1 rounded">
             {destination.category}
           </div>

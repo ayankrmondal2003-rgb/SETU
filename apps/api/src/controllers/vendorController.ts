@@ -320,3 +320,261 @@ export async function getPublicVendors(req: Request, res: Response, next: NextFu
   }
 }
 
+// Notifications Controllers
+export async function getVendorNotifications(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) throw new ApiError(401, 'Unauthorized');
+
+    const vendor = await prisma.vendor.findUnique({ where: { userId: req.user.userId } });
+    if (!vendor) throw new ApiError(404, 'Vendor profile not found');
+
+    const notifications = await prisma.notification.findMany({
+      where: { vendorId: vendor.id },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const unreadCount = notifications.filter(n => !n.isRead).length;
+
+    return res.json({
+      success: true,
+      unreadCount,
+      data: notifications
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function markNotificationRead(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) throw new ApiError(401, 'Unauthorized');
+
+    const { id } = req.params;
+
+    const notification = await prisma.notification.update({
+      where: { id },
+      data: { isRead: true }
+    });
+
+    return res.json({ success: true, data: notification });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Conversations & Messages Controllers
+export async function getVendorConversations(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) throw new ApiError(401, 'Unauthorized');
+
+    const vendor = await prisma.vendor.findUnique({ where: { userId: req.user.userId } });
+    if (!vendor) throw new ApiError(404, 'Vendor profile not found');
+
+    const conversations = await prisma.conversation.findMany({
+      where: { vendorId: vendor.id },
+      include: {
+        touristUser: {
+          select: { id: true, name: true, email: true, avatar: true }
+        },
+        messages: {
+          orderBy: { createdAt: 'desc' },
+          take: 1
+        }
+      },
+      orderBy: { updatedAt: 'desc' }
+    });
+
+    // Calculate unread count across conversations
+    const unreadMessagesCount = await prisma.message.count({
+      where: {
+        conversation: { vendorId: vendor.id },
+        isRead: false,
+        senderId: { not: req.user.userId }
+      }
+    });
+
+    return res.json({
+      success: true,
+      unreadCount: unreadMessagesCount,
+      data: conversations
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getConversationMessages(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) throw new ApiError(401, 'Unauthorized');
+
+    const { id } = req.params;
+
+    const conversation = await prisma.conversation.findUnique({
+      where: { id },
+      include: {
+        touristUser: {
+          select: { id: true, name: true, email: true, avatar: true }
+        },
+        vendor: {
+          select: { id: true, businessName: true, logo: true }
+        }
+      }
+    });
+
+    if (!conversation) throw new ApiError(404, 'Conversation not found');
+
+    // Mark unread messages sent by the other party as read
+    await prisma.message.updateMany({
+      where: {
+        conversationId: id,
+        senderId: { not: req.user.userId },
+        isRead: false
+      },
+      data: { isRead: true }
+    });
+
+    const messages = await prisma.message.findMany({
+      where: { conversationId: id },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        conversation,
+        messages
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function sendConversationMessage(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) throw new ApiError(401, 'Unauthorized');
+
+    const { id } = req.params;
+    const { content } = req.body;
+
+    if (!content || typeof content !== 'string' || !content.trim()) {
+      throw new ApiError(400, 'Message content cannot be empty');
+    }
+
+    const conversation = await prisma.conversation.findUnique({
+      where: { id }
+    });
+
+    if (!conversation) throw new ApiError(404, 'Conversation not found');
+
+    const message = await prisma.message.create({
+      data: {
+        conversationId: id,
+        senderId: req.user.userId,
+        content: content.trim()
+      }
+    });
+
+    await prisma.conversation.update({
+      where: { id },
+      data: { updatedAt: new Date() }
+    });
+
+    return res.status(201).json({ success: true, data: message });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// Public Storefront & Preview Endpoint
+export async function getVendorPublicStorefront(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { slug } = req.params;
+
+    // Try finding by id or matching businessName slug
+    let vendor = await prisma.vendor.findUnique({
+      where: { id: slug },
+      include: {
+        offerings: {
+          where: { isActive: true }
+        }
+      }
+    });
+
+    if (!vendor) {
+      // Find first vendor whose businessName matches slug
+      const allVendors = await prisma.vendor.findMany({
+        where: { status: 'APPROVED' },
+        include: {
+          offerings: { where: { isActive: true } }
+        }
+      });
+
+      vendor = allVendors.find(v => {
+        const vSlug = v.businessName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        return vSlug === slug.toLowerCase() || v.id === slug;
+      }) || null;
+    }
+
+    if (!vendor) {
+      throw new ApiError(404, 'Vendor storefront not found');
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        id: vendor.id,
+        businessName: vendor.businessName,
+        description: vendor.description,
+        businessType: vendor.businessType,
+        city: vendor.city,
+        district: vendor.district,
+        logo: vendor.logo,
+        coverImage: vendor.coverImage,
+        phone: vendor.phone,
+        email: vendor.email,
+        status: vendor.status,
+        offerings: vendor.offerings
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+export async function getOwnVendorStorefront(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    if (!req.user) throw new ApiError(401, 'Unauthorized');
+
+    const vendor = await prisma.vendor.findUnique({
+      where: { userId: req.user.userId },
+      include: {
+        offerings: { where: { isActive: true } }
+      }
+    });
+
+    if (!vendor) throw new ApiError(404, 'Vendor profile not found');
+
+    return res.json({
+      success: true,
+      data: {
+        id: vendor.id,
+        businessName: vendor.businessName,
+        description: vendor.description,
+        businessType: vendor.businessType,
+        city: vendor.city,
+        district: vendor.district,
+        logo: vendor.logo,
+        coverImage: vendor.coverImage,
+        phone: vendor.phone,
+        email: vendor.email,
+        status: vendor.status,
+        offerings: vendor.offerings
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+

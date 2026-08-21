@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Compass, MapPin, Calendar, Sparkles } from 'lucide-react';
 import gsap from 'gsap';
@@ -15,9 +15,13 @@ import { InteractiveMap } from '../../components/maps/InteractiveMap';
 gsap.registerPlugin(ScrollTrigger);
 
 const HERO_IMAGES = [
-  'https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?auto=format&fit=crop&w=2000&q=80',
-  'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=2000&q=80',
-  'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2000&q=80'
+  '/images/hero section 2.jpg',
+  '/images/hero section 3.jpg',
+  '/images/hero section 4.jpg',
+  '/images/hero section 5.jpg',
+  '/images/hero section 6.jpg',
+  '/images/hero section 7.jpg',
+  '/images/hero section 8.jpg'
 ];
 
 export const HomePage: React.FC = () => {
@@ -31,11 +35,23 @@ export const HomePage: React.FC = () => {
   const heroHeadingRef = useRef<HTMLHeadingElement>(null);
   const sectionRef = useRef<HTMLDivElement>(null);
 
-  // Rotate Hero Imagery every 6 seconds
+  // Filter events to only those that haven't ended yet (endDate >= today)
+  const upcomingEvents = useMemo(() => {
+    const today = new Date();
+    const todayClean = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+    return events.filter((ev) => {
+      const end = new Date(ev.endDate);
+      const endClean = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      return todayClean <= endClean;
+    });
+  }, [events]);
+
+  // Rotate Hero Imagery every 5 seconds
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentHeroIdx((prev) => (prev + 1) % HERO_IMAGES.length);
-    }, 6000);
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
@@ -79,21 +95,30 @@ export const HomePage: React.FC = () => {
     <div className="w-full">
       {/* 1. HERO SECTION */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-brand-black text-white">
-        {/* Background Image Carousel */}
-        {HERO_IMAGES.map((imgUrl, index) => (
-          <div
-            key={imgUrl}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              index === currentHeroIdx ? 'opacity-50 scale-105' : 'opacity-0 scale-100'
-            }`}
-            style={{ transition: 'opacity 1.2s ease-in-out, transform 8s ease-out' }}
-          >
-            <img src={imgUrl} alt="Bihar Tourism" className="w-full h-full object-cover" />
-          </div>
-        ))}
+        {/* Background Image Carousel with Ken Burns Zoom Animation */}
+        {HERO_IMAGES.map((imgUrl, index) => {
+          const isActive = index === currentHeroIdx;
+          return (
+            <div
+              key={imgUrl}
+              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+                isActive ? 'opacity-60 scale-105 z-0' : 'opacity-0 scale-100 -z-10'
+              }`}
+              style={{
+                transition: 'opacity 1.5s ease-in-out, transform 6s ease-out'
+              }}
+            >
+              <img
+                src={imgUrl}
+                alt={`Bihar Tourism Hero ${index + 1}`}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          );
+        })}
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-brand-black via-black/40 to-transparent z-0" />
 
         {/* Hero Content */}
         <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-12 text-center pt-24 pb-12 flex flex-col items-center">
@@ -103,7 +128,7 @@ export const HomePage: React.FC = () => {
 
           <h1
             ref={heroHeadingRef}
-            className="hero-heading text-cream font-serif tracking-tight max-w-5xl"
+            className="hero-heading text-cream font-serif max-w-5xl"
           >
             {t('home.heroTitle', "Bridges to Bihar's Ancient Soul")}
           </h1>
@@ -131,15 +156,31 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Hero Bottom Banner */}
-        <div className="absolute bottom-6 left-0 right-0 z-10 px-6 md:px-12 flex items-center justify-between text-xs text-cream/60 sub-nav-label max-w-7xl mx-auto">
-          <span>01 / BUDDHIST • ECO • RAMAYAN • SIKH</span>
-          <span className="hidden md:inline">UNESCO WORLD HERITAGE & MARKETPLACE</span>
+        {/* Hero Bottom Banner with Indicators & Counter */}
+        <div className="absolute bottom-6 left-0 right-0 z-10 px-6 md:px-12 flex items-center justify-between text-xs text-cream/80 sub-nav-label max-w-7xl mx-auto">
+          <div className="flex items-center space-x-3">
+            <span className="text-brand-gold font-mono font-bold text-sm">
+              0{currentHeroIdx + 1} <span className="text-white/40">/ 0{HERO_IMAGES.length}</span>
+            </span>
+            <div className="flex items-center space-x-1.5 ml-2">
+              {HERO_IMAGES.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentHeroIdx(idx)}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${
+                    idx === currentHeroIdx ? 'w-8 bg-brand-gold' : 'w-2 bg-white/30 hover:bg-white/60'
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+          <span className="hidden md:inline text-white/60">UNESCO WORLD HERITAGE & MARKETPLACE</span>
         </div>
       </section>
 
       {/* 2. EDITORIAL INTRO SECTION */}
-      <section className="py-24 px-6 md:px-12 bg-cream text-brand-black border-b border-brand-brown/15">
+      <section className="py-24 px-6 md:px-12 bg-cream/85 backdrop-blur-sm text-brand-black border-b border-brand-brown/15">
         <div className="max-w-5xl mx-auto text-center space-y-6">
           <span className="sub-nav-label text-brand-maroon">{t('home.homeTitle', 'LAND OF ENLIGHTENMENT')}</span>
           <h2 className="text-3xl md:text-5xl font-serif leading-tight">
@@ -152,7 +193,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 3. FEATURED CIRCUITS */}
-      <section ref={sectionRef} className="py-24 px-6 md:px-12 max-w-7xl mx-auto">
+      <section ref={sectionRef} className="py-24 px-6 md:px-12 max-w-7xl mx-auto my-6 bg-white/85 backdrop-blur-sm rounded-2xl border border-brand-brown/15 shadow-md">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
           <div>
             <span className="sub-nav-label text-brand-maroon">SACRED TRAILS</span>
@@ -175,7 +216,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 4. FEATURED DESTINATIONS */}
-      <section className="py-24 px-6 md:px-12 bg-cream-light border-y border-brand-brown/15">
+      <section className="py-24 px-6 md:px-12 bg-cream-light/85 backdrop-blur-sm border-y border-brand-brown/15">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
@@ -200,7 +241,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 5. INTERACTIVE MAP TEASER */}
-      <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto">
+      <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto my-6 bg-white/85 backdrop-blur-sm rounded-2xl border border-brand-brown/15 shadow-md">
         <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
           <span className="sub-nav-label text-brand-maroon">GEOGRAPHIC DISCOVERY</span>
           <h2 className="text-4xl font-serif text-brand-black">Interactive Bihar Tourism Map</h2>
@@ -213,7 +254,7 @@ export const HomePage: React.FC = () => {
       </section>
 
       {/* 6. CULTURAL CALENDAR & EVENTS TEASER */}
-      <section className="py-24 px-6 md:px-12 bg-cream border-t border-brand-brown/15">
+      <section className="py-24 px-6 md:px-12 bg-cream/85 backdrop-blur-sm border-t border-brand-brown/15">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
@@ -224,21 +265,40 @@ export const HomePage: React.FC = () => {
               to="/calendar"
               className="mt-4 md:mt-0 sub-nav-label text-xs text-brand-maroon hover:text-brand-black flex items-center space-x-1"
             >
-              <span>OPEN FULL CALENDAR</span>
+              <span>VIEW FULL 2026 CALENDAR</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {events.slice(0, 3).map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
+          {upcomingEvents.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {upcomingEvents.slice(0, 3).map((ev) => (
+                <EventCard key={ev.id} event={ev} />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white/80 backdrop-blur-sm p-10 rounded-xl border border-brand-brown/15 text-center space-y-3 shadow-sm">
+              <Calendar className="w-10 h-10 text-brand-maroon mx-auto opacity-75" />
+              <h3 className="font-serif text-xl font-medium text-brand-black">No Upcoming Events Right Now</h3>
+              <p className="font-serif text-brand-black/75 text-sm max-w-md mx-auto">
+                There are currently no scheduled upcoming festival dates remaining for this period. Check back soon or view the full 2026 calendar archive.
+              </p>
+              <div className="pt-2">
+                <Link
+                  to="/calendar"
+                  className="inline-flex items-center space-x-1.5 sub-nav-label text-xs text-brand-maroon hover:text-brand-black font-semibold"
+                >
+                  <span>BROWSE FULL 2026 CALENDAR</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* 7. AI COMPANION PROMOTIONAL BANNER */}
-      <section className="py-20 px-6 md:px-12 bg-brand-black text-cream">
+      {/* 7. STATS & IMPERIAL FOOTER BANNER */}
+      <section className="py-20 px-6 md:px-12 bg-brand-black/90 backdrop-blur-md text-cream">
         <div className="max-w-5xl mx-auto text-center space-y-6">
           <div className="inline-flex items-center space-x-2 px-3 py-1 bg-brand-gold/20 text-brand-gold rounded-full text-xs sub-nav-label">
             <Sparkles className="w-4 h-4 animate-pulse" />

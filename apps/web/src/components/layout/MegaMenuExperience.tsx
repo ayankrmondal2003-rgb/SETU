@@ -1,12 +1,80 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, Calendar, Utensils } from 'lucide-react';
+import api from '../../api/client';
 
 interface MegaMenuExperienceProps {
   onClose: () => void;
 }
 
 export const MegaMenuExperience: React.FC<MegaMenuExperienceProps> = ({ onClose }) => {
+  const [festivals, setFestivals] = useState<any[]>([]);
+  const [fairs, setFairs] = useState<any[]>([]);
+  const [cuisines, setCuisines] = useState<any[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadData() {
+      try {
+        const [evRes, cuRes] = await Promise.all([
+          api.get('/events'),
+          api.get('/cuisine')
+        ]);
+
+        if (isMounted) {
+          if (evRes.data?.success && Array.isArray(evRes.data.data)) {
+            const allEv = evRes.data.data;
+            const festList = allEv.filter((e: any) =>
+              ['Cultural', 'Religious', 'Music/Arts', 'Heritage', 'Festival'].includes(e.category) && !e.category.includes('Fair')
+            ).slice(0, 4);
+
+            const fairList = allEv.filter((e: any) =>
+              e.category.includes('Fair') || e.category.includes('Mela')
+            ).slice(0, 4);
+
+            setFestivals(festList);
+            setFairs(fairList);
+          }
+
+          if (cuRes.data?.success && Array.isArray(cuRes.data.data)) {
+            setCuisines(cuRes.data.data.slice(0, 4));
+          }
+        }
+      } catch (err) {
+        console.error('Error loading MegaMenuExperience data:', err);
+      }
+    }
+
+    loadData();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Fallbacks if API data is still loading
+  const defaultFestivals = [
+    { title: 'Tapovan Festival', slug: 'tapovan-festival-2026', heroImage: '/images/tapovan (1).jpeg', district: 'Gaya' },
+    { title: 'Makar Sankranti', slug: 'makar-sankranti-2026', heroImage: '/images/makar shakranti (1).jpg', district: 'Patna' },
+    { title: 'Mandar Mahotsav', slug: 'mandar-mahotsav-2026', heroImage: '/images/mandar mahostsav (1).jpg', district: 'Banka' },
+    { title: 'Vishnudham Mahotsav', slug: 'vishnudham-mahotsav-2026', heroImage: '/images/vishnudham mahotsav (1).jpeg', district: 'Aurangabad' }
+  ];
+
+  const defaultFairs = [
+    { title: 'Parshuram Utsav Mela', slug: 'parshuram-utsav-mela-2026', heroImage: '/images/porshuram utsav mela(1).jpeg', district: 'Patna' },
+    { title: 'Shravani Mela', slug: 'shravani-mela-2026', heroImage: '/images/shrabani mela (1).jpeg', district: 'Bhagalpur' },
+    { title: 'Makar Mela Rajgir', slug: 'makar-mela-rajgir-2026', heroImage: '/images/makar mela rajgir (1).jpeg', district: 'Nalanda' },
+    { title: 'Malmas Mela Rajgir', slug: 'malmas-mela-rajgir-2026', heroImage: '/images/malmas mela rajgir (1).jpeg', district: 'Nalanda' }
+  ];
+
+  const defaultCuisines = [
+    { name: 'Litti Chokha & Sattu Delicacies', slug: 'litti-chokha', heroImage: '/images/litthi chokha (1).jpeg', location: 'Patna' },
+    { name: 'Thekua & Traditional Chhath Prasad', slug: 'thekua-festive-sweets', heroImage: '/images/thekua(1).jpeg', location: 'Statewide' },
+    { name: 'Mithila Makhana Heritage', slug: 'makhana-culinary-traditions', heroImage: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=400&q=80', location: 'Darbhanga' },
+    { name: 'Silao Khaja — GI Tag Sweet', slug: 'silao-khaja', heroImage: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=400&q=80', location: 'Silao, Rajgir' }
+  ];
+
+  const displayFestivals = festivals.length > 0 ? festivals : defaultFestivals;
+  const displayFairs = fairs.length > 0 ? fairs : defaultFairs;
+  const displayCuisines = cuisines.length > 0 ? cuisines : defaultCuisines;
+
   return (
     <div className="w-full bg-cream border-b border-brand-brown/15 shadow-2xl py-10 px-6 md:px-12 transition-all duration-300">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-10">
@@ -17,38 +85,31 @@ export const MegaMenuExperience: React.FC<MegaMenuExperienceProps> = ({ onClose 
             <Sparkles className="w-4 h-4 text-brand-maroon" />
             <span className="sub-nav-label text-brand-maroon">TOUCH / FESTIVALS</span>
           </div>
-          <div className="group overflow-hidden rounded relative aspect-[16/9] mb-3">
-            <img
-              src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80"
-              alt="Chhath Puja Mahaparv"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
-              <span className="text-white text-lg font-serif">Chhath Puja Mahaparv</span>
-            </div>
+
+          <div className="space-y-2">
+            {displayFestivals.map((item) => (
+              <Link
+                key={item.id || item.slug}
+                to={`/experience/festivals/${item.slug}`}
+                onClick={onClose}
+                className="group flex items-center space-x-3 p-2 rounded-xl hover:bg-white/80 border border-transparent hover:border-brand-brown/15 transition-all shadow-none hover:shadow-sm"
+              >
+                <img
+                  src={item.heroImage}
+                  alt={item.title || item.name}
+                  className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-brand-brown/15 group-hover:scale-105 transition-transform"
+                />
+                <div className="min-w-0 flex-1">
+                  <span className="font-serif text-sm font-semibold text-brand-black group-hover:text-brand-maroon block truncate">
+                    {item.title || item.name}
+                  </span>
+                  <span className="text-[11px] font-sans text-brand-brown/70 block truncate">
+                    {item.location || item.district || 'Bihar'}
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <Link to="/experience/festivals/chhath-puja" onClick={onClose} className="hover:text-brand-maroon transition-colors block py-1 font-serif text-base">
-                Chhath Puja — Sun God Eco Festival
-              </Link>
-            </li>
-            <li>
-              <Link to="/experience/festivals/pitru-paksha-mela" onClick={onClose} className="hover:text-brand-maroon transition-colors block py-1 font-serif text-base">
-                Pitru Paksha — Sacred Gaya Rituals
-              </Link>
-            </li>
-            <li>
-              <Link to="/experience/festivals/prakash-parv" onClick={onClose} className="hover:text-brand-maroon transition-colors block py-1 font-serif text-base">
-                Prakash Parv — Patna Sahib Celebrations
-              </Link>
-            </li>
-            <li>
-              <Link to="/experience/festivals/rajgir-mahotsav" onClick={onClose} className="hover:text-brand-maroon transition-colors block py-1 font-serif text-base">
-                Rajgir Mahotsav — Arts & Classical Dance
-              </Link>
-            </li>
-          </ul>
         </div>
 
         {/* SEE: FAIRS */}
@@ -57,28 +118,31 @@ export const MegaMenuExperience: React.FC<MegaMenuExperienceProps> = ({ onClose 
             <Calendar className="w-4 h-4 text-brand-maroon" />
             <span className="sub-nav-label text-brand-maroon">SEE / FAIRS</span>
           </div>
-          <div className="group overflow-hidden rounded relative aspect-[16/9] mb-3">
-            <img
-              src="https://images.unsplash.com/photo-1582510003544-4d00b7f74220?auto=format&fit=crop&w=600&q=80"
-              alt="Sonepur Cattle Fair"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
-              <span className="text-white text-lg font-serif">Sonepur Mela</span>
-            </div>
+
+          <div className="space-y-2">
+            {displayFairs.map((item) => (
+              <Link
+                key={item.id || item.slug}
+                to={`/experience/fairs/${item.slug}`}
+                onClick={onClose}
+                className="group flex items-center space-x-3 p-2 rounded-xl hover:bg-white/80 border border-transparent hover:border-brand-brown/15 transition-all shadow-none hover:shadow-sm"
+              >
+                <img
+                  src={item.heroImage}
+                  alt={item.title || item.name}
+                  className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-brand-brown/15 group-hover:scale-105 transition-transform"
+                />
+                <div className="min-w-0 flex-1">
+                  <span className="font-serif text-sm font-semibold text-brand-black group-hover:text-brand-maroon block truncate">
+                    {item.title || item.name}
+                  </span>
+                  <span className="text-[11px] font-sans text-brand-brown/70 block truncate">
+                    {item.location || item.district || 'Bihar'}
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <Link to="/experience/fairs/sonepur-mela" onClick={onClose} className="hover:text-brand-maroon transition-colors block py-1 font-serif text-base">
-                Sonepur Mela — Asia’s Historic Fair
-              </Link>
-            </li>
-            <li>
-              <Link to="/experience/fairs/shravani-mela" onClick={onClose} className="hover:text-brand-maroon transition-colors block py-1 font-serif text-base">
-                Shravani Mela — Sultanganj Kanwar Yatra
-              </Link>
-            </li>
-          </ul>
         </div>
 
         {/* TASTE: CUISINE */}
@@ -87,41 +151,35 @@ export const MegaMenuExperience: React.FC<MegaMenuExperienceProps> = ({ onClose 
             <Utensils className="w-4 h-4 text-brand-maroon" />
             <span className="sub-nav-label text-brand-maroon">TASTE / CUISINE</span>
           </div>
-          <div className="group overflow-hidden rounded relative aspect-[16/9] mb-3">
-            <img
-              src="https://images.unsplash.com/photo-1596797038530-2c107229654b?auto=format&fit=crop&w=600&q=80"
-              alt="Authentic Bihari Cuisine"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-4 flex flex-col justify-end">
-              <span className="text-white text-lg font-serif">Traditional Gastronomy</span>
-            </div>
+
+          <div className="space-y-2">
+            {displayCuisines.map((item) => (
+              <Link
+                key={item.id || item.slug}
+                to={`/experience/taste/${item.slug}`}
+                onClick={onClose}
+                className="group flex items-center space-x-3 p-2 rounded-xl hover:bg-white/80 border border-transparent hover:border-brand-brown/15 transition-all shadow-none hover:shadow-sm"
+              >
+                <img
+                  src={item.heroImage}
+                  alt={item.name}
+                  className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-brand-brown/15 group-hover:scale-105 transition-transform"
+                />
+                <div className="min-w-0 flex-1">
+                  <span className="font-serif text-sm font-semibold text-brand-black group-hover:text-brand-maroon block truncate">
+                    {item.name}
+                  </span>
+                  <span className="text-[11px] font-sans text-brand-brown/70 block truncate">
+                    {item.location || item.district || 'Bihar'}
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
-          <ul className="space-y-2 text-sm">
-            <li>
-              <Link to="/experience/taste/litti-chokha" onClick={onClose} className="hover:text-brand-maroon transition-colors block py-1 font-serif text-base">
-                Litti Chokha & Sattu Delicacies
-              </Link>
-            </li>
-            <li>
-              <Link to="/experience/taste/thekua-festive-sweets" onClick={onClose} className="hover:text-brand-maroon transition-colors block py-1 font-serif text-base">
-                Thekua & Traditional Chhath Prasad
-              </Link>
-            </li>
-            <li>
-              <Link to="/experience/taste/makhana-culinary-traditions" onClick={onClose} className="hover:text-brand-maroon transition-colors block py-1 font-serif text-base">
-                Mithila Makhana Heritage
-              </Link>
-            </li>
-            <li>
-              <Link to="/experience/taste/silao-khaja" onClick={onClose} className="hover:text-brand-maroon transition-colors block py-1 font-serif text-base">
-                Silao Khaja — GI Tag Sweet
-              </Link>
-            </li>
-          </ul>
         </div>
 
       </div>
     </div>
   );
 };
+

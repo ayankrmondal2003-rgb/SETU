@@ -10,6 +10,7 @@ export interface User {
   role: Role;
   avatar?: string;
   phone?: string;
+  isPremium?: boolean;
   vendor?: {
     id: string;
     businessName: string;
@@ -68,6 +69,8 @@ export interface Order {
   quantity: number;
   bookingDate: string;
   amount: number;
+  commissionAmount?: number;
+  vendorEarnings?: number;
   currency: string;
   paymentStatus: OrderPaymentStatus;
   orderStatus: OrderStatus;
@@ -87,9 +90,11 @@ export interface Circuit {
   slug: string;
   description: string;
   heroImage: string;
+  gallery?: string[];
   overview: string;
   locations: string[];
   destinations?: Destination[];
+  nearbyVendors?: Vendor[];
 }
 
 export interface Destination {
@@ -98,7 +103,7 @@ export interface Destination {
   slug: string;
   description: string;
   districtId: string;
-  district?: District;
+  district: District;
   circuitId?: string;
   circuit?: Circuit;
   category: string;
@@ -113,9 +118,9 @@ export interface Destination {
     suggestedDuration?: string;
     entryFee?: string;
     timings?: string;
-    funFacts?: string[];
     didYouKnow?: string;
-    contentStatus?: 'VERIFIED' | 'NEEDS_REVIEW';
+    funFacts?: string[];
+    contentStatus?: string;
   };
   stays: Array<{ name: string; rating: number; price: string }>;
   recommendations: string[];
@@ -130,39 +135,53 @@ export interface District {
   region: string;
   description: string;
   heroImage: string;
+  gallery?: string[];
   latitude: number;
   longitude: number;
   destinations?: Destination[];
 }
 
-export type EventCategory = 'Religious' | 'Cultural' | 'Fair/Mela' | 'Heritage' | 'Music/Arts' | 'Local/Regional';
-
 export interface TourismEvent {
   id: string;
   title: string;
   slug: string;
-  category: EventCategory | string;
+  category: 'Festival' | 'Fair' | 'Cultural' | 'Seasonal' | 'Religious' | 'Arts' | string;
   description: string;
   startDate: string;
   endDate: string;
-  year?: number;
-  lastVerified?: string;
-  isLunar?: boolean;
   location: string;
   district: string;
   latitude: number;
   longitude: number;
   heroImage: string;
   gallery: string[];
+  isLunar?: boolean;
+  lastVerified?: string;
+  nearestPolice?: string;
+  nearestHospital?: string;
+  nearbyRestaurants?: any[];
   nearbyVendors?: Vendor[];
   nearbyAttractions?: Destination[];
+}
+
+export interface CuisineItem {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  heroImage: string;
+  location: string;
+  district: string;
+  restaurants: Array<{ name: string; address: string; type?: string }>;
 }
 
 export interface Favorite {
   id: string;
   userId: string;
-  destinationId: string;
+  destinationId?: string;
   destination?: Destination;
+  eventId?: string;
+  event?: TourismEvent;
   createdAt?: string;
 }
 
@@ -180,3 +199,33 @@ export interface AiItineraryResponse {
   }>;
   insiderTips: string[];
 }
+
+export interface HubPlace {
+  name: string;
+  type: 'Tourist Place' | 'Hospital' | 'Hotel' | 'Temple';
+  latitude: number;
+  longitude: number;
+}
+
+export interface CityHub {
+  id: string;
+  name: string;
+  slug: string;
+  region: string;
+  latitude: number;
+  longitude: number;
+  heroImage: string;
+  summary: string;
+  overallScore: number;
+  tourismRating: number;
+  hospitalRating: number;
+  hotelRating: number;
+  businessRating: number;
+  educationRating: number;
+  infrastructureRating: number;
+  touristPlaces: HubPlace[];
+  verdict: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+

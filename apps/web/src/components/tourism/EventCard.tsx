@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Calendar, MapPin, ArrowRight, Moon, CheckCircle2 } from 'lucide-react';
 import { format, differenceInCalendarDays } from 'date-fns';
 import { TourismEvent } from '../../types';
+import { FavoriteButton } from '../common/FavoriteButton';
 
 interface EventCardProps {
   event: TourismEvent;
@@ -55,6 +56,9 @@ export const EventCard: React.FC<EventCardProps> = ({ event }) => {
             alt={event.title}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           />
+          <div className="absolute top-3 right-3 z-10">
+            <FavoriteButton targetType="event" targetId={event.id} />
+          </div>
           <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
             <span className={`text-[10px] sub-nav-label px-2.5 py-1 rounded shadow-md font-bold uppercase tracking-wider ${getCategoryBg(event.category)}`}>
               {event.category}

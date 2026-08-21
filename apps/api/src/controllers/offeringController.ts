@@ -36,7 +36,7 @@ export async function getPublicOfferings(req: Request, res: Response, next: Next
       where,
       include: {
         vendor: {
-          select: { id: true, businessName: true, logo: true, city: true, rating: true } as any
+          select: { id: true, businessName: true, logo: true, city: true }
         }
       },
       orderBy: { createdAt: 'desc' }

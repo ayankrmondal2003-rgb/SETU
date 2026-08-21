@@ -8,6 +8,7 @@ router.use(requireAuth);
 
 router.get('/', getFavorites);
 router.post('/', addFavorite);
+router.delete('/:type/:id', removeFavorite);
 router.delete('/:destinationId', removeFavorite);
 
 export default router;

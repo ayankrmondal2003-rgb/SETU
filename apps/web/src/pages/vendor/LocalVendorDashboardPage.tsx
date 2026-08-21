@@ -121,7 +121,7 @@ export const LocalVendorDashboardPage: React.FC = () => {
     .reduce((sum, o) => sum + o.amount, 0);
 
   return (
-    <div className="pt-28 pb-24 px-4 sm:px-8 max-w-6xl mx-auto space-y-8">
+    <div className="pt-28 pb-24 px-4 sm:px-8 max-w-6xl mx-auto my-6 bg-cream/85 backdrop-blur-sm rounded-2xl border border-brand-brown/15 p-6 sm:p-10 shadow-lg space-y-8">
       {/* High Visibility Vendor Banner */}
       <div className="bg-amber-900 text-cream p-6 sm:p-8 rounded-xl shadow-lg border-2 border-brand-gold flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-center space-x-4">
