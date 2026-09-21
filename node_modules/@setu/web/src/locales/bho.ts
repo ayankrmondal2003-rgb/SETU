@@ -1,0 +1,111 @@
+/**
+ * Bhojpuri (भोजपुरी) Translations for SETU Bihar Tourism Platform
+ * 
+ * NOTE: These Bhojpuri translations have been prepared for the Setu Bihar Tourism platform.
+ * Quality Status: REQUIRES NATIVE SPEAKER REVIEW BEFORE PRODUCTION DEPLOYMENT.
+ */
+export const bho = {
+  nav: {
+    logoTag: 'बिहार पर्यटन',
+    explore: 'बिहार देखल जाव',
+    experience: 'अनुभव करीं',
+    circuits: 'धरोहर परिपथ',
+    destinations: 'प्रमुख जगहिया',
+    calendar: 'सांस्कृतिक कैलेंडर',
+    maps: 'डिजिटल नक्शा',
+    audioGuides: 'ऑडियो गाइड',
+    aiGuide: 'एआई गाइड',
+    signIn: 'साइन इन करीं',
+    register: 'खाता बनाईं',
+    signOut: 'साइन आउट',
+    adminDashboard: 'एडमिन कंसोल',
+    vendorDashboard: 'व्यापारी पोर्टल',
+    localVendorDashboard: 'गांव के कारीगर पोर्टल',
+    selectLanguage: 'भाषा चुनीं'
+  },
+  home: {
+    heroTagline: 'ज्ञान आ पावन लोकगाथा के पवित्र माटी',
+    heroTitle: 'बिहार के प्राचीन आत्मा से जुड़ीं',
+    heroSubtitle: 'सदीयन पुरान महान धरोहर, पावन तीरथ परिपथ, हाथ से बनल सामान आ रंग-बिरंग सांस्कृतिक मेला के जातरा करीं।',
+    exploreCircuits: 'धरोहर परिपथ देखल जाव',
+    viewCalendar: 'सांस्कृतिक कैलेंडर 2026',
+    audioGuideTitle: 'ऑडियो गाइड सुनीं',
+    audioGuideDesc: 'महाबोधि मंदिर, नालंदा के खंडहर आ वैशाली शांति स्तूप के जानकारी ऑडियो में सुनीं।',
+    popularDestinations: 'नामचीन जगही सभ',
+    popularDestinationsDesc: 'पुरान बौद्ध विहार से लेके पवित्र गंगा घाट आ बुनकर लोगन तक।',
+    tourismStatsTitle: 'बिहार पर्यटन के बढ़त कदम',
+    statsDistricts: '38 गो जिला के जानकारी',
+    statsCircuits: '7 गो मुख्य परिपथ',
+    statsVendors: '200+ जांचल स्थानीय व्यापारी',
+    statsEvents: '40+ सालाना मेला आ परब'
+  },
+  calendar: {
+    badge: 'बिहार पर्यटन कैलेंडर 2026',
+    verifiedBadge: '✓ 2026 के सरकारी कैलेंडर पक्का',
+    title: 'मेला आ परब-त्योहार 2026',
+    subtitle: 'बिहार के 38 जिला में साल भर लागे वाला मेला, तीरथ आ सांस्कृतिक आयोजन के पूरा जानकारी पाईं।',
+    monthlyView: 'महीना के हिसाब से',
+    fullYearView: 'पूरा साल 2026 (सभ आयोजन)',
+    categoryLabel: 'वर्ग:',
+    catAll: 'सब वर्ग',
+    catReligious: 'धार्मिक',
+    catCultural: 'सांस्कृतिक',
+    catFairMela: 'मेला आ नुमाइश',
+    catHeritage: 'धरौहर',
+    catMusicArts: 'नाच-गान आ कला',
+    catLocalRegional: 'अंचलिक आ क्षेत्रीय',
+    lunarTag: 'चांद तिथि',
+    verifiedYear: 'सत्यापित 2026',
+    daysEvent: 'दिन के आयोजन',
+    viewEventDetails: 'पूरा जानकारी देखल जाव',
+    loading: '2026 के कार्यक्रम लोड होत बा...',
+    noEventsTitle: 'कोनो कार्यक्रम ना मिलल',
+    noEventsDesc: 'एह फ़िल्टर में कोनो कार्यक्रम नइखे।',
+    showingEvents: 'सत्यापित कार्यक्रम देखावल जात बा'
+  },
+  localVendor: {
+    portalBadge: 'हस्तशिल्प आ स्थानीय सामान',
+    portalTitle: 'स्थानीय कारीगर डैशबोर्ड',
+    portalSubtitle: 'अपना असली बिहाड़ी सामान के प्रबंध करीं, गाहकन के पूछ-ताछ देखीं आ सीधे सैलानी लोगन से जुड़ीं।',
+    approvedStatus: '✓ स्वीकृत व्यापारी',
+    pendingStatus: '⌛ स्वीकृति बाकी बा',
+    addProduct: 'नया सामान जोड़ीं',
+    editProfile: 'व्यापार जानकारी बदलीं',
+    callHelpline: 'सेतु हेल्पलाइन पर फोन करीं',
+    helplineDesc: 'टोल-फ्री नंबर: 1800-345-6789',
+    myCatalog: 'हमर सामान कैटलॉग',
+    recentOrders: 'हाल के गाहकी',
+    orderId: 'ऑर्डर नंबर',
+    customer: 'गाहक',
+    amount: 'रुपया',
+    status: 'हाल-चाल',
+    date: 'तारीख',
+    noProducts: 'अभी कोनो सामान जोड़ल नइखे। बेचे खातिर "नया सामान जोड़ीं" दबाईं!'
+  },
+  auth: {
+    signInTitle: 'सेतु में राउर फिर से स्वागत बा',
+    signInSubtitle: 'अपना यात्रा योजना या व्यापारी डैशबोर्ड खातिर साइन इन करीं',
+    registerTitle: 'सेतु बिहार पर्यटन से जुड़ीं',
+    registerSubtitle: 'सैलानी, व्यापारी या स्थानीय कारीगर के रूप में नया खाता बनाईं',
+    emailLabel: 'ईमेल पता',
+    passwordLabel: 'पासवर्ड',
+    fullNameLabel: 'पूरा नाम',
+    phoneLabel: 'फोन नंबर',
+    roleLabel: 'रउआ कवना रूप में जुड़त बानी:',
+    touristRole: 'सैलानी / यात्री',
+    vendorRole: 'होटल / रेस्तरां व्यापारी',
+    localVendorRole: 'स्थानीय सामान / कारीगर',
+    signInBtn: 'सेतु में साइन इन करीं',
+    registerBtn: 'खाता बनाईं',
+    dontHaveAccount: 'खाता नइखे?',
+    alreadyHaveAccount: 'पहले से खाता बा?'
+  },
+  footer: {
+    tagline: 'सैलानी, स्थानीय कारीगर आ पवित्र धरोहर के जोड़े वाला सेतु।',
+    quickLinks: 'जरूरी लिंक',
+    contact: 'संपर्क आ मदद',
+    helplineTitle: 'बिहार पर्यटन हेल्पलाइन',
+    helplineNumber: '1800-345-6789 (24x7 फ्री फोन)',
+    rights: 'सब अधिकार सुरक्षित। सेतु बिहार पर्यटन।'
+  }
+};
