@@ -17,6 +17,7 @@ model User {
   phone         String?
   isActive      Boolean @default(true)
   emailVerified Boolean @default(false)
+  googleSubject String? @unique
 
   // SETU Plus (customer premium membership)
   isPremium              Boolean   @default(false)

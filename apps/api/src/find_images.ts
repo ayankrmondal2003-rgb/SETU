@@ -1,7 +1,16 @@
 import fs from 'fs';
 import path from 'path';
 
-function findImages(dir, fileList = []) {
+type ImageFile = {
+  name: string;
+  path: string;
+};
+
+
+function findImages(
+  dir: string,
+  fileList: ImageFile[] = []
+): ImageFile[] {
   const files = fs.readdirSync(dir);
   for (const file of files) {
     if (file === 'node_modules' || file === '.git' || file === '.gemini') continue;

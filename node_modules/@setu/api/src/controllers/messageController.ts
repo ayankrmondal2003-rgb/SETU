@@ -66,6 +66,10 @@ export async function initiateOrGetConversation(req: AuthenticatedRequest, res: 
         where: { id: conversation.id },
         data: { updatedAt: new Date() }
       });
+      const sender = await prisma.user.findUnique({
+  where: { id: req.user.userId },
+  select: { name: true }
+      });
 
       // Auto-create Notification for Vendor
       await prisma.notification.create({
@@ -73,7 +77,7 @@ export async function initiateOrGetConversation(req: AuthenticatedRequest, res: 
           vendorId,
           type: 'message_new',
           title: 'New Tourist Message',
-          message: `New message from ${req.user.name || 'Tourist'}: "${message.trim().substring(0, 80)}${message.trim().length > 80 ? '...' : ''}"`
+          message: `New message from ${sender?.name || 'Tourist'}: "${message.trim().substring(0, 80)}${message.trim().length > 80 ? '...' : ''}"`
         }
       }).catch(() => {});
     }
@@ -223,16 +227,22 @@ export async function sendMessageInConversation(req: AuthenticatedRequest, res: 
     });
 
     // If tourist sent message, trigger vendor Notification
-    if (isTourist) {
-      await prisma.notification.create({
-        data: {
-          vendorId: conversation.vendorId,
-          type: 'message_new',
-          title: 'New Message from Tourist',
-          message: `New message from ${req.user.name || 'Tourist'}: "${content.trim().substring(0, 80)}${content.trim().length > 80 ? '...' : ''}"`
-        }
-      }).catch(() => {});
+    // If tourist sent message, trigger vendor Notification
+if (isTourist) {
+  const sender = await prisma.user.findUnique({
+    where: { id: req.user.userId },
+    select: { name: true }
+  });
+
+  await prisma.notification.create({
+    data: {
+      vendorId: conversation.vendorId,
+      type: 'message_new',
+      title: 'New Message from Tourist',
+      message: `New message from ${sender?.name || 'Tourist'}: "${content.trim().substring(0, 80)}${content.trim().length > 80 ? '...' : ''}"`
     }
+  }).catch(() => {});
+}
 
     return res.status(201).json({ success: true, data: message });
   } catch (error) {

@@ -6,6 +6,7 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (credentials: any) => Promise<User>;
+  googleLogin: (credential: string, role: 'TOURIST' | 'VENDOR') => Promise<User>;
   register: (data: any) => Promise<User>;
   logout: () => Promise<void>;
   refreshMe: () => Promise<void>;
@@ -52,6 +53,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     throw new Error(res.data.error || 'Registration failed');
   };
 
+  const googleLogin = async (credential: string, role: 'TOURIST' | 'VENDOR') => {
+    const res = await api.post('/auth/google', { credential, role });
+    if (!res.data.success) throw new Error(res.data.error || 'Google sign-in failed');
+    setUser(res.data.user);
+    return res.data.user;
+  };
+
   const logout = async () => {
     try {
       await api.post('/auth/logout');
@@ -61,7 +69,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refreshMe }}>
+    <AuthContext.Provider value={{ user, loading, login, googleLogin, register, logout, refreshMe }}>
       {children}
     </AuthContext.Provider>
   );

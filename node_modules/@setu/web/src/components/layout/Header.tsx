@@ -397,7 +397,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenAi }) => {
               <div className="relative">
                 <button
                   onClick={() => setActiveDropdown(activeDropdown === 'profile' ? null : 'profile')}
-                  className="flex items-center space-x-2 text-xs sub-nav-label hover:text-brand-gold transition-colors focus:outline-none"
+                  className="account-menu-trigger flex items-center space-x-2 text-xs sub-nav-label hover:text-brand-gold transition-colors focus-visible:outline-brand-gold"
                 >
                   <div className="w-7 h-7 rounded-full bg-brand-brown text-cream flex items-center justify-center text-xs font-semibold border border-brand-gold/40">
                     {user.name.charAt(0)}

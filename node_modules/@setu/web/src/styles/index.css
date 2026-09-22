@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html[data-theme='dark'] .account-menu-trigger { color: #f4efe6; }
+html[data-theme='dark'] .account-menu-trigger:hover { color: #c69b45; }
+html[data-theme='dark'] p.text-emerald-700 { color: #6ee7b7; }
+
 :root {
   --surface-cream: 244 239 230;
   --surface-light: 250 248 243;

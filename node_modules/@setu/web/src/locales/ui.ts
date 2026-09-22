@@ -1,5 +1,13 @@
 // Shared interface translations. Keys are normalized English source copy.
 export const ui: Record<string, { hi: string; bn: string }> = {
+  "or": { hi: "या", bn: "অথবা" },
+  "continue with google": { hi: "Google से जारी रखें", bn: "Google দিয়ে চালিয়ে যান" },
+  "google sign-in is not available yet. please use email and password.": { hi: "Google साइन इन अभी उपलब्ध नहीं है। ईमेल और पासवर्ड का उपयोग करें।", bn: "Google সাইন ইন এখনও উপলব্ধ নয়। ইমেল ও পাসওয়ার্ড ব্যবহার করুন।" },
+  "google sign-in failed": { hi: "Google साइन इन विफल हुआ", bn: "Google সাইন ইন ব্যর্থ হয়েছে" },
+  "this account cannot sign in with the selected google account type.": { hi: "यह खाता चुनी गई भूमिका से Google साइन इन नहीं कर सकता।", bn: "এই অ্যাকাউন্ট নির্বাচিত ধরনে Google সাইন ইন করতে পারবে না।" },
+  "reload this page and try google sign-in again.": { hi: "पृष्ठ रीफ़्रेश करके Google साइन इन फिर आज़माएं।", bn: "পাতা রিফ্রেশ করে আবার Google সাইন ইন করুন।" },
+  "google could not verify this sign-in. please try again.": { hi: "Google इस साइन इन की पुष्टि नहीं कर सका। फिर कोशिश करें।", bn: "Google এই সাইন ইন যাচাই করতে পারেনি। আবার চেষ্টা করুন।" },
+  "please use your existing email and password for this account.": { hi: "इस खाते का मौजूदा ईमेल और पासवर्ड उपयोग करें।", bn: "এই অ্যাকাউন্টের বর্তমান ইমেল ও পাসওয়ার্ড ব্যবহার করুন।" },
 "availability": {"hi":"उपलब्धता","bn":"প্রাপ্যতা"},
 "book & pay with razorpay": {"hi":"Razorpay से बुकिंग और भुगतान करें","bn":"Razorpay দিয়ে বুক ও পেমেন্ট করুন"},
 "culinary heritage": {"hi":"पाक विरासत","bn":"খাবারের ঐতিহ্য"},

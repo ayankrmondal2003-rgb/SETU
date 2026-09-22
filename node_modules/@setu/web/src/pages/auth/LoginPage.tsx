@@ -7,9 +7,10 @@ import { useToast } from '../../context/ToastContext';
 import { useTranslation } from '../../context/LanguageContext';
 import { LoadingScreen } from '../../components/common/LoadingScreen';
 import { getHomeRouteForRole } from '../../utils/navigation';
+import { GoogleSignIn } from '../../components/common/GoogleSignIn';
 
 export const LoginPage: React.FC = () => {
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const { showToast } = useToast();
   const { t, translate } = useTranslation();
   const navigate = useNavigate();
@@ -32,6 +33,21 @@ export const LoginPage: React.FC = () => {
   const [showSuccessAnim, setShowSuccessAnim] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [loggedInUser, setLoggedInUser] = useState<any>(null);
+
+  const handleGoogleCredential = async (credential: string) => {
+    if (role === 'ADMIN') return;
+    setLoading(true);
+    setErrorMsg('');
+    try {
+      const user = await googleLogin(credential, role);
+      setLoggedInUser(user);
+      showToast(`${translate('Welcome back')}, ${user.name}!`, 'success');
+      setShowSuccessAnim(true);
+    } catch (error: any) {
+      setErrorMsg(translate(error.response?.data?.error || 'Google sign-in failed'));
+      setLoading(false);
+    }
+  };
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -229,6 +245,7 @@ export const LoginPage: React.FC = () => {
               {translate(loading ? 'AUTHENTICATING...' : `SIGN IN AS ${roleLabel.toUpperCase()}`)}
             </button>
           </form>
+          {role !== 'ADMIN' && <GoogleSignIn role={role} disabled={loading} onCredential={handleGoogleCredential} />}
 
           {role !== 'ADMIN' && <div className="mt-6 text-center text-xs font-sans text-brand-brown/80 relative z-10">
             {t('auth.dontHaveAccount', "Don't have an account?")}<LocalizedText text={' '} />

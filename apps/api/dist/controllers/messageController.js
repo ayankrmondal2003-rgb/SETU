@@ -62,13 +62,17 @@ async function initiateOrGetConversation(req, res, next) {
                 where: { id: conversation.id },
                 data: { updatedAt: new Date() }
             });
+            const sender = await prisma.user.findUnique({
+                where: { id: req.user.userId },
+                select: { name: true }
+            });
             // Auto-create Notification for Vendor
             await prisma.notification.create({
                 data: {
                     vendorId,
                     type: 'message_new',
                     title: 'New Tourist Message',
-                    message: `New message from ${req.user.name || 'Tourist'}: "${message.trim().substring(0, 80)}${message.trim().length > 80 ? '...' : ''}"`
+                    message: `New message from ${sender?.name || 'Tourist'}: "${message.trim().substring(0, 80)}${message.trim().length > 80 ? '...' : ''}"`
                 }
             }).catch(() => { });
         }
@@ -202,13 +206,18 @@ async function sendMessageInConversation(req, res, next) {
             data: { updatedAt: new Date() }
         });
         // If tourist sent message, trigger vendor Notification
+        // If tourist sent message, trigger vendor Notification
         if (isTourist) {
+            const sender = await prisma.user.findUnique({
+                where: { id: req.user.userId },
+                select: { name: true }
+            });
             await prisma.notification.create({
                 data: {
                     vendorId: conversation.vendorId,
                     type: 'message_new',
                     title: 'New Message from Tourist',
-                    message: `New message from ${req.user.name || 'Tourist'}: "${content.trim().substring(0, 80)}${content.trim().length > 80 ? '...' : ''}"`
+                    message: `New message from ${sender?.name || 'Tourist'}: "${content.trim().substring(0, 80)}${content.trim().length > 80 ? '...' : ''}"`
                 }
             }).catch(() => { });
         }

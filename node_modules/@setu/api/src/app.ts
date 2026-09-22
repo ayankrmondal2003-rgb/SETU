@@ -1,3 +1,4 @@
+import path from 'node:path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -18,15 +19,16 @@ import cityHubRoutes from './routes/cityHubRoutes.js';
 import messageRoutes from './routes/messageRoutes.js';
 
 const app = express();
-
+app.set('trust proxy', 1);
 app.use(helmet({
-  contentSecurityPolicy: false
+  contentSecurityPolicy: false,
+  crossOriginOpenerPolicy: {
+    policy: 'same-origin-allow-popups'
+  }
 }));
 
 app.use(cors({
-  origin: (origin, callback) => {
-    callback(null, true);
-  },
+  origin: env.FRONTEND_URL,
   credentials: true
 }));
 
@@ -52,6 +54,19 @@ app.use('/api/favorites', favoriteRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/conversations', messageRoutes);
 
+app.use('/api', (_req, res) => {
+  res.status(404).json({ message: 'API route not found' });
+});
+
+if (env.NODE_ENV === 'production') {
+  const webDist = path.resolve(__dirname, '../../web/dist');
+
+  app.use(express.static(webDist));
+
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(webDist, 'index.html'));
+  });
+}
 // Global Error Handler
 app.use(errorHandler);
 

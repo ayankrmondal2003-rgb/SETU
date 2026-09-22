@@ -221,8 +221,7 @@ export const EntryWelcomePage: React.FC<{ onCompleteEntry?: () => void }> = ({ o
                 {selectedLang === 'hi' && <Check className="w-4 h-4 text-brand-maroon stroke-[3]" />}
               </button>
 
-              {/* Bengali - Only visible for Vendor selection per requirements */}
-              {true ? (
+              {/* Bengali is available to every account type. */}
                 <button
                   type="button"
                   onClick={() => setSelectedLang('bn')}
@@ -238,11 +237,6 @@ export const EntryWelcomePage: React.FC<{ onCompleteEntry?: () => void }> = ({ o
                   </div>
                   {selectedLang === 'bn' && <Check className="w-4 h-4 text-brand-maroon stroke-[3]" />}
                 </button>
-              ) : (
-                <div className="py-3.5 px-4 rounded-xl border border-white/10 bg-black/30 text-cream/40 text-xs flex items-center justify-center text-center">
-                  <span>Bengali available for Vendors</span>
-                </div>
-              )}
             </div>
           </div>
 

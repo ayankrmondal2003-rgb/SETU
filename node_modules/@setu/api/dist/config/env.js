@@ -21,5 +21,6 @@ exports.env = {
     RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID || 'rzp_test_setu_bihar_demo_key',
     RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET || 'rzp_test_secret_demo_key_12345',
     RAZORPAY_SETU_PLUS_PLAN_ID: process.env.RAZORPAY_SETU_PLUS_PLAN_ID || '',
-    GEMINI_API_KEY: process.env.GEMINI_API_KEY || ''
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || ''
 };
