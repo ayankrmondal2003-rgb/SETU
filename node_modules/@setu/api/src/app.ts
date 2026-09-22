@@ -22,6 +22,8 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(helmet({
   contentSecurityPolicy: false,
+  // Map tile providers require the requesting site's origin for identification.
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
   crossOriginOpenerPolicy: {
     policy: 'same-origin-allow-popups'
   }

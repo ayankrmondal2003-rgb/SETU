@@ -316,7 +316,8 @@ export const MapsPage: React.FC = () => {
             >
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                referrerPolicy="strict-origin-when-cross-origin"
               />
 
               <MapController center={mapCenter} zoom={mapZoom} />

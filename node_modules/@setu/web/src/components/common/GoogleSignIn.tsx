@@ -69,7 +69,9 @@ export const GoogleSignIn: React.FC<{
     <div className="flex items-center gap-3 text-brand-brown/70 text-xs font-sans mb-4">
       <span className="h-px flex-1 bg-brand-gold/25" />{translate('Or')}<span className="h-px flex-1 bg-brand-gold/25" />
     </div>
-    <div ref={container} aria-disabled={disabled} className={`flex justify-center min-h-0 ${disabled ? 'pointer-events-none opacity-50' : ''}`} />
+    {/* Match Google's iframe canvas scheme to preserve transparency. The SDK's
+        filled_black/outline option above still controls the visible button theme. */}
+    <div ref={container} aria-disabled={disabled} style={{ colorScheme: 'light' }} className={`flex justify-center min-h-0 ${disabled ? 'pointer-events-none opacity-50' : ''}`} />
     {state !== 'ready' && <button type="button" disabled className="w-full py-3 rounded-full border border-brand-gold/30 text-brand-brown bg-cream font-sans text-sm">
       {translate('Continue with Google')}
     </button>}
